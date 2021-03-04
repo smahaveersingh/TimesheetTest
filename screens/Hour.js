@@ -16,6 +16,7 @@ const db = DatabaseConnection.getConnection();
   const selectDate = new Date();
   const [currentDate, setCurrentDate] = React.useState('');
 
+  const [dayoftheWeek, setDayoftheWeek] = React.useState('');
   const [projNum, setprojNum] = React.useState('');
   const [siteID, setsiteID] = React.useState('')
   
@@ -24,7 +25,7 @@ const db = DatabaseConnection.getConnection();
   const [Lvisible, setLVisible] = React.useState(false);
   const [Lfinishvisible, setLfinishVisible] = React.useState(false);
 
-  const [Hours, setHours] = React.useState(selectDate.getHours());
+  const [Hours, setHours] = React.useState(selectDate.getHours().toString());
   const [Minutes, setMinutes] = React.useState(selectDate.getMinutes());
   const [finishHours, setfinishHours] = React.useState(selectDate.getHours());
   const [finishMinutes, setfinishMinutes] = React.useState(selectDate.getMinutes());
@@ -52,7 +53,7 @@ const db = DatabaseConnection.getConnection();
     setLfinishVisible(false)
   }, [setLfinishVisible])
 
-
+  
 
   const onConfirm = React.useCallback(
     ({ hours, minutes }) => {
@@ -91,7 +92,7 @@ const db = DatabaseConnection.getConnection();
     ({ hours, minutes }) => {
       setLfinishVisible(false);
       console.log({ hours, minutes });
-      //setTime('{$hours}:${minutes}')
+      setTime('{$hours}:${minutes}')
       hours = setfinishLunchHours(hours);
       minutes = setfinishLunchMinutes(minutes);
     },
@@ -99,8 +100,10 @@ const db = DatabaseConnection.getConnection();
   );
 
   const saveStartingWeek = (value) => {
+        moment.locale('en');
         console.log("saveStartingWeek - value:", value);
-        setselectedWeek(new Date(value).toString());
+        setselectedWeek(moment(value).format('MMM Do'));
+        //setselectedWeek(new Date(value).toString());
   }
 
   const renderUserNames = () => {
@@ -142,12 +145,12 @@ const db = DatabaseConnection.getConnection();
   console.log(dateTime);*/
 
   const add_entry = () => {
-    console.log( selectedWeek, currentDate, 'VOD103015', description, Hours, Minutes, finishHours, finishMinutes, LunchHours, LunchMinutes,  finishLunchHours, finishLunchMinutes,  0, 'ce005');
+    console.log( selectedWeek, currentDate, projNum, description, Hours, Minutes, finishHours, finishMinutes, LunchHours, LunchMinutes,  finishLunchHours, finishLunchMinutes,  0, siteID, dayoftheWeek);
 
     db.transaction(function (tx) {
       tx.executeSql(
-        'INSERT INTO Timesheet(user_id, eow, date, projNum, comment , arrivalHours , arrivalMinutes,  departHours, departMinutes, startLHours, startLMinutes, FinishLHours, FinishLMinutes,  totalHrs, siteID) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-        [1, selectedWeek, currentDate, projNum, description, Hours, Minutes, finishHours, finishMinutes, LunchHours, LunchMinutes, finishLunchHours, finishLunchMinutes,   0, siteID ],
+        'INSERT INTO Timesheet(user_id, eow, date, projNum, comment , arrivalHours , arrivalMinutes,  departHours, departMinutes, startLHours, startLMinutes, FinishLHours, FinishLMinutes,  totalHrs, siteID, dayoftheweek) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+        [1, selectedWeek, currentDate, projNum, description, Hours, Minutes, finishHours, finishMinutes, LunchHours, LunchMinutes, finishLunchHours, finishLunchMinutes,   0, siteID, dayoftheWeek ],
         (tx, results) => {
           console.log('Results', results.rowsAffected);
           if (results.rowsAffected > 0) {
@@ -157,7 +160,7 @@ const db = DatabaseConnection.getConnection();
               [
                 {
                   text: 'Ok',
-                  onPress: () => navigation.navigate('Home'),
+                  onPress: () => navigation.navigate('ListView'),
                 },
               ],
               { cancelable: false }
@@ -185,79 +188,29 @@ const db = DatabaseConnection.getConnection();
           />
           </View>
 
-          <View style={styles.section}>
-            <TimePickerModal
-        visible={visible}
-        onDismiss={onDismiss}
-        onConfirm={onConfirm}
-        hours={12} // default: current hours
-        minutes={14} // default: current minutes
-        label="Select time" // optional, default 'Select time'
-        cancelLabel="Cancel" // optional, default: 'Cancel'
-        confirmLabel="Ok" // optional, default: 'Ok'
-        animationType="fade" // optional, default is 'none'
-        locale={'en'} // optional, default is automically detected by your system
-      />
-      <Button icon="walk" onPress={()=> setVisible(true)}>
-        Start time : {Hours}:{Minutes}
-      </Button>
-
-      <TimePickerModal
-        visible={finishvisible}
-        onDismiss={onFinishDismiss}
-        onConfirm={onFinishConfirm}
-        hours={12} // default: current hours
-        minutes={14} // default: current minutes
-        label="Select time" // optional, default 'Select time'
-        cancelLabel="Cancel" // optional, default: 'Cancel'
-        confirmLabel="Ok" // optional, default: 'Ok'
-        animationType="fade" // optional, default is 'none'
-        locale={'en'} // optional, default is automically detected by your system
-      />
-      <Button icon="run" onPress={()=> setfinishVisible(true)}>
-        Finish time : {finishHours}:{finishMinutes}
-      </Button>
-      
-      <TimePickerModal
-        visible={Lvisible}
-        onDismiss={onLDismiss}
-        onConfirm={onLConfirm}
-        hours={12} // default: current hours
-        minutes={14} // default: current minutes
-        label="Select time" // optional, default 'Select time'
-        cancelLabel="Cancel" // optional, default: 'Cancel'
-        confirmLabel="Ok" // optional, default: 'Ok'
-        animationType="fade" // optional, default is 'none'
-        locale={'en'} // optional, default is automically detected by your system
-      />
-           <Button icon="food" onPress={()=> setLVisible(true)}>
-        Start Lunch : {LunchHours}:{LunchMinutes}
-      </Button>
-
-      <TimePickerModal
-        visible={Lfinishvisible}
-        onDismiss={onLFinishDismiss}
-        onConfirm={onLFinishConfirm}
-        hours={12} // default: current hours
-        minutes={14} // default: current minutes
-        label="Select time" // optional, default 'Select time'
-        cancelLabel="Cancel" // optional, default: 'Cancel'
-        confirmLabel="Ok" // optional, default: 'Ok'
-        animationType="fade" // optional, default is 'none'
-        locale={'en'} // optional, default is automically detected by your system
-      />
-      <Button icon="food" onPress={()=> setLfinishVisible(true)}>
-        Finish Lunch : {finishLunchHours}:{finishLunchMinutes}
-      </Button>
-
-      <TextInput
-      placeholder="  Description"
-      onChangeText={description => setDescription(description)} 
-      defaultValue={description}
-      style={styles.input}
-      />
-
-<View style={styles.btn}>
+          
+          <View>
+                    <Text style={{fontWeight: 'bold'}}>
+                        Day of the Week 
+                    </Text>
+                   <Picker style={styles.datefive}
+                    selectedValue={dayoftheWeek}
+                    onValueChange=
+                    {
+                        (itemValue, itemIndex) => setDayoftheWeek(itemValue)
+                    }>
+                            <Picker.Item label="Monday" value="monday" />
+                            <Picker.Item label="Tuesday" value="tuesday" />
+                            <Picker.Item label="Wednesday" value="wednesday" />
+                            <Picker.Item label="Thursday" value="thursday" />
+                            <Picker.Item label="Friday" value="friday" />
+                            <Picker.Item label="Saturday" value="saturday" />
+                            <Picker.Item label="Sunday" value="sunday" />
+                           
+                            </Picker>
+                            </View>
+  
+          <View style={styles.btn}>
             <View style={{ flexDirection: 'row' }}>
               <Text style={styles.titleStyle}>Project No</Text>
               <View style={styles.pickerStyle}>
@@ -276,8 +229,8 @@ const db = DatabaseConnection.getConnection();
               </View>
           </View>
           <View style={{ flexDirection: 'row' }}>
-              <Text style={styles.titleStyle}>Name</Text>
-              <View style={styles.pickerStyle}>
+              <Text style={styles.titleStyle}>Site ID</Text>
+              <View style={styles.pickerStyle2}>
                   {<Picker
                       mode='dropdown'
                       selectedValue={siteID}
@@ -293,7 +246,82 @@ const db = DatabaseConnection.getConnection();
           </View>
          </View>
 
-      <Button onPress={add_entry}>
+
+          <View style={styles.section}>
+            <TimePickerModal
+        visible={visible}
+        onDismiss={onDismiss}
+        onConfirm={onConfirm}
+        hours={12} // default: current hours
+        minutes={14} // default: current minutes
+        label="Select time" // optional, default 'Select time'
+        cancelLabel="Cancel" // optional, default: 'Cancel'
+        confirmLabel="Ok" // optional, default: 'Ok'
+        animationType="fade" // optional, default is 'none'
+        locale={'en'} // optional, default is automically detected by your system
+      />
+      <Button color="#09253a" style={styles.startTime} icon="walk" onPress={()=> setVisible(true)}>
+        Start: {Hours}:{Minutes}
+      </Button>
+
+      <TimePickerModal
+        visible={finishvisible}
+        onDismiss={onFinishDismiss}
+        onConfirm={onFinishConfirm}
+        hours={12} // default: current hours
+        minutes={14} // default: current minutes
+        label="Select time" // optional, default 'Select time'
+        cancelLabel="Cancel" // optional, default: 'Cancel'
+        confirmLabel="Ok" // optional, default: 'Ok'
+        animationType="fade" // optional, default is 'none'
+        locale={'en'} // optional, default is automically detected by your system
+      />
+      <Button color="#09253a" style={styles.endTime} icon="run" onPress={()=> setfinishVisible(true)}>
+        Finish: {finishHours}:{finishMinutes}
+      </Button>
+      
+      <TimePickerModal
+        visible={Lvisible}
+        onDismiss={onLDismiss}
+        onConfirm={onLConfirm}
+        hours={12} // default: current hours
+        minutes={14} // default: current minutes
+        label="Select time" // optional, default 'Select time'
+        cancelLabel="Cancel" // optional, default: 'Cancel'
+        confirmLabel="Ok" // optional, default: 'Ok'
+        animationType="fade" // optional, default is 'none'
+        locale={'en'} // optional, default is automically detected by your system
+      />
+           <Button color="#09253a" style={styles.startLunch} icon="food" onPress={()=> setLVisible(true)}>
+        Lunch : {LunchHours}:{LunchMinutes}
+      </Button>
+
+      <TimePickerModal
+        visible={Lfinishvisible}
+        onDismiss={onLFinishDismiss}
+        onConfirm={onLFinishConfirm}
+        hours={12} // default: current hours
+        minutes={0} // default: current minutes
+        label="Select time" // optional, default 'Select time'
+        cancelLabel="Cancel" // optional, default: 'Cancel'
+        confirmLabel="Ok" // optional, default: 'Ok'
+        animationType="fade" // optional, default is 'none'
+        locale={'en'} // optional, default is automically detected by your system
+      />
+      <Button color="#09253a" style={styles.endLunch} icon="food" onPress={()=> setLfinishVisible(true)}>
+        Finishes : {finishLunchHours}:{finishLunchMinutes}
+      </Button>
+
+      <TextInput 
+      placeholder="  Description"
+      onChangeText={description => setDescription(description)} 
+      defaultValue={description}
+      style={styles.input}
+      
+      />
+
+
+      <Button color="#09253a" onPress={add_entry}>
               Submit
             </Button>
       
@@ -329,6 +357,27 @@ const db = DatabaseConnection.getConnection();
             backgroundColor: '#e8dddc',
             borderRadius: 20,
             fontWeight: 'bold'
+           },
+
+           startTime:{
+            marginLeft: -200,
+            width: 140
+           },
+
+           endTime:{
+            marginLeft: 200,
+            marginTop: -38,
+            width: 140
+           },
+
+           startLunch:{
+            marginLeft: -200,
+            width: 140
+           },
+
+           endLunch:{
+            marginLeft: 200,
+            marginTop: -38,
            },
            
          text:{
@@ -366,7 +415,7 @@ const db = DatabaseConnection.getConnection();
       margin: 15,
       height: 40,
       width: 340,
-      borderColor: '#7a42f4',
+      borderColor: "#09253a",
       borderWidth: 2,
       borderRadius: 10
    },
@@ -374,15 +423,24 @@ const db = DatabaseConnection.getConnection();
     marginLeft:20,
     marginTop:10,
     padding:-10,
+    fontWeight:'bold'
     },
 
   pickerStyle: {
-    width:225,
-    marginLeft:5,
+    width:325,
+    marginLeft:-50,
     padding: -15,
     marginTop:35,
     marginRight: -40,
     },
+
+    pickerStyle2: {
+      width:325,
+      marginLeft:-20,
+      padding: -15,
+      marginTop:35,
+      marginRight: -40,
+      },
      });
      
      export default Hour;
