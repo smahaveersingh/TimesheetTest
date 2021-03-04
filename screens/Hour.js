@@ -160,7 +160,7 @@ const db = DatabaseConnection.getConnection();
               [
                 {
                   text: 'Ok',
-                  onPress: () => navigation.navigate('ListView'),
+                  onPress: () => navigation.navigate('Home'),
                 },
               ],
               { cancelable: false }

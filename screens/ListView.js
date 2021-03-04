@@ -3,7 +3,7 @@ import {  View,Text, FlatList } from 'react-native';
 import { Collapse, CollapseHeader, CollapseBody } from "accordion-collapse-react-native";
 import { Thumbnail, List, ListItem, Separator, Item } from 'native-base';
 import { DatabaseConnection } from '../components/database-connection';
-import { Button, DataTable } from 'react-native-paper';
+import { DataTable } from 'react-native-paper';
 
 const db = DatabaseConnection.getConnection();
 
@@ -29,7 +29,7 @@ function ListView () {
         return (
           <View
           key={item.user_id}
-          style={{ marginTop: 20, padding: 30, borderRadius: 10, width: 500, marginLeft: -50 }}>
+          style={{backgroundColor: '#d5f5dd', marginTop: 20, padding: 30, borderRadius: 10, width: 500, marginLeft: -50 }}>
             <Collapse style={{marginBottom: -80}}>
       <CollapseHeader>
         <Separator>

@@ -1,9 +1,8 @@
 import * as React from 'react';
-import { StyleSheet, View, FlatList, SafeAreaView, LayoutAnimation, UIManager, TouchableOpacity, Platform, Dimensions, Animated, } from 'react-native';
-import { Button, DataTable, List } from 'react-native-paper';
-import { AppLoading } from 'expo';
-import { Accordion, Text, Icon } from 'native-base';
-import * as Font from 'expo-font';
+import { StyleSheet, View, Text, FlatList, SafeAreaView, LayoutAnimation, UIManager, TouchableOpacity, Platform, Dimensions, Animated, } from 'react-native';
+import { Button, DataTable, Portal } from 'react-native-paper';
+import { Collapse, CollapseHeader, CollapseBody } from "accordion-collapse-react-native";
+import { Thumbnail, ListItem, Separator, Item } from 'native-base';
 import { Ionicons } from '@expo/vector-icons';
 import { DatabaseConnection } from '../components/database-connection';
 
@@ -40,29 +39,25 @@ export default function Home ({ navigation }) {
 
     const listItemView = (item) => {
       return (
-        <View>
-          <DataTable.Header>
-              <DataTable.Title>Day</DataTable.Title>
-              <DataTable.Title>Week</DataTable.Title>
-              <DataTable.Title>Project</DataTable.Title>
-              <DataTable.Title>Time</DataTable.Title>
-              <DataTable.Title>totalHrs</DataTable.Title>
-            </DataTable.Header>
-
         <View
           key={item.user_id}
-          style={{ backgroundColor: '#d5f5dd', marginTop: 20, padding: 30, borderRadius: 10, width: 350 }}>
-           
-            <DataTable.Row>
-              <DataTable.Cell style={{paddingLeft: -10}}>{item.dayoftheweek}</DataTable.Cell>
-              <DataTable.Cell>{item.eow}</DataTable.Cell>
-              <DataTable.Cell>{item.projNum}</DataTable.Cell>
-              <DataTable.Cell>{item.arrivalHours}{item.arrivalMinutes}</DataTable.Cell>
-              <DataTable.Cell>{item.totalHrs}</DataTable.Cell>
-            </DataTable.Row>
-
-        </View>
-        </View>
+          style={{ marginTop: 20, padding: 30, borderRadius: 10, width: 500, marginLeft: -50 }}>
+            <Collapse>
+      <CollapseHeader style={{marginBottom: -10}}>
+        <Separator>
+          <Text style={{fontWeight: 'bold'}}>{item.dayoftheweek}  ({item.totalHrs}  Hours)</Text>
+        </Separator>
+      </CollapseHeader>
+      <CollapseBody >
+        <ListItem >
+          <DataTable.Cell>{item.projNum} {item.siteID}</DataTable.Cell>
+          <DataTable.Cell>{item.arrivalHours}:{item.arrivalMinutes}{'\n'}{item.departHours}:{item.departMinutes}</DataTable.Cell>
+          <DataTable.Cell>{item.comment}</DataTable.Cell>
+        </ListItem>
+        
+      </CollapseBody>
+    </Collapse>
+          </View>
       );
     };    
   
@@ -72,19 +67,17 @@ export default function Home ({ navigation }) {
         <SafeAreaView style={{ flex: 1 }}>
           <View style={styles.container}>
           <View style={{ flex: 1 }}>
-          <FlatList
-            style={{ marginTop: 20 }}
+            
+              <FlatList
+            style={{ marginTop: -20 }}
             contentContainerStyle={{ paddingHorizontal: 20 }}
             data={flatListItems}
             keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item }) => listItemView(item)}  
+            renderItem={({ item }) => listItemView(item)} 
           />
+            
+          
         </View>
-
-        
-         
-     
-     
            <Button icon="plus" onPress={pressHandler}>
                 Add Entry
            </Button>
