@@ -3,7 +3,8 @@ import { StyleSheet, View, Text, FlatList, SafeAreaView, LayoutAnimation, UIMana
 import { Button, DataTable, Portal } from 'react-native-paper';
 import { Collapse, CollapseHeader, CollapseBody } from "accordion-collapse-react-native";
 import { Thumbnail, ListItem, Separator, Item } from 'native-base';
-import { Ionicons } from '@expo/vector-icons';
+import moment from 'moment';
+import WeekSelector from 'react-native-week-selector';
 import { DatabaseConnection } from '../components/database-connection';
 
 const db = DatabaseConnection.getConnection();
@@ -13,12 +14,22 @@ const db = DatabaseConnection.getConnection();
 export default function Home ({ navigation }) {
 
   const [flatListItems, setFlatListItems] = React.useState([]);
-  const [tableItems, setTableItems] = React.useState([]);
-
+  const [Hours, setHours] = React.useState('');
+  const [Minutes, setMinutes] = React.useState('');
+  const [FINHours, setFINHours] = React.useState('');
+  const [FINMinutes, setFINMinutes] = React.useState('');
+  const [Week, setWeek] = React.useState();
+  var thisWeek = moment();
   
     const pressHandler = () => 
     {
       navigation.navigate('Hour')
+    }
+
+    const saveWEEK = (value) => {
+      moment.locale('en');
+      console.log(moment(value).format('MMM Do'));
+      setWeek(moment(value).format('MMM Do'));
     }
 
     React.useEffect(() => {
@@ -31,18 +42,35 @@ export default function Home ({ navigation }) {
             for (let i = 0; i < results.rows.length; ++i)
               temp.push(results.rows.item(i));
             setFlatListItems(temp);
-            setTableItems(temp);
           }
         );
       });
     }, []);
 
+    const FormatTime = (item) => {
+      
+    }
+
     const listItemView = (item) => {
+
+      var SHours = moment(item.arrivalHours, 'HH');
+      var SMinutes = moment(item.arrivalMinutes, 'mm');
+
+      setHours(SHours.format('HH'));
+      setMinutes(SMinutes.format('mm'));
+
+      var FHours = moment(item.departHours, 'HH');
+      var FMinutes = moment(item.departMinutes, 'mm');
+
+      setFINHours(FHours.format('HH'));
+      setFINMinutes(FMinutes.format('mm'));
+      
       return (
         <View
           key={item.user_id}
-          style={{ marginTop: 20, padding: 30, borderRadius: 10, width: 500, marginLeft: -50 }}>
-            <Collapse>
+          style={{ marginTop: 20, padding: 30, borderRadius: 10, width: 450, marginLeft: -50 }}>
+            <View style={{marginBottom: -30}}>
+              <Collapse>
       <CollapseHeader style={{marginBottom: -10}}>
         <Separator>
           <Text style={{fontWeight: 'bold'}}>{item.dayoftheweek}  ({item.totalHrs}  Hours)</Text>
@@ -50,13 +78,14 @@ export default function Home ({ navigation }) {
       </CollapseHeader>
       <CollapseBody >
         <ListItem >
-          <DataTable.Cell>{item.projNum} {item.siteID}</DataTable.Cell>
-          <DataTable.Cell>{item.arrivalHours}:{item.arrivalMinutes}{'\n'}{item.departHours}:{item.departMinutes}</DataTable.Cell>
-          <DataTable.Cell>{item.comment}</DataTable.Cell>
-        </ListItem>
-        
+          <DataTable.Cell>{item.projNum}{'\n'}{item.siteID}</DataTable.Cell>
+          <DataTable.Cell style={{marginLeft: -60}}>{Hours}:{Minutes}-{FINHours}:{FINMinutes}</DataTable.Cell>
+          <DataTable.Cell style={{marginLeft: -80}}>{item.comment}</DataTable.Cell>
+        </ListItem>        
       </CollapseBody>
     </Collapse>
+            </View>
+            
           </View>
       );
     };    
@@ -66,6 +95,8 @@ export default function Home ({ navigation }) {
       return (
         <SafeAreaView style={{ flex: 1 }}>
           <View style={styles.container}>
+           
+          
           <View style={{ flex: 1 }}>
             
               <FlatList
@@ -75,17 +106,21 @@ export default function Home ({ navigation }) {
             keyExtractor={(item, index) => index.toString()}
             renderItem={({ item }) => listItemView(item)} 
           />
-            
           
         </View>
+       
+           </View>
            <Button icon="plus" onPress={pressHandler}>
                 Add Entry
            </Button>
-           </View>
         </SafeAreaView>
    );
    }
-   
+    /*<WeekSelector
+            whitelistRange={[new Date(2018, 7, 13), new Date()]}
+            weekStartsOn={6}
+            onWeekChanged={saveWEEK}
+          />*/
    
    const styles = StyleSheet.create({
        container:{
@@ -107,6 +142,14 @@ export default function Home ({ navigation }) {
            marginBottom:200,
            justifyContent: 'center'
            },
+           date: {
+            flex: 1,
+            fontWeight: 'bold',
+            justifyContent: 'center',
+          },
+          weekstyle: {
+            marginTop: -400
+          },
    
            text1:{
              alignItems: 'center',

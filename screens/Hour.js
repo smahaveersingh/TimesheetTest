@@ -25,8 +25,8 @@ const db = DatabaseConnection.getConnection();
   const [Lvisible, setLVisible] = React.useState(false);
   const [Lfinishvisible, setLfinishVisible] = React.useState(false);
 
-  const [Hours, setHours] = React.useState(selectDate.getHours().toString());
-  const [Minutes, setMinutes] = React.useState(selectDate.getMinutes());
+  const [Hours, setHours] = React.useState('');
+  const [Minutes, setMinutes] = React.useState('');
   const [finishHours, setfinishHours] = React.useState(selectDate.getHours());
   const [finishMinutes, setfinishMinutes] = React.useState(selectDate.getMinutes());
   const [LunchHours, setLunchHours] = React.useState(selectDate.getHours());
@@ -59,9 +59,13 @@ const db = DatabaseConnection.getConnection();
     ({ hours, minutes }) => {
       setVisible(false);
       console.log({ hours, minutes });
+      var FrHours = moment(hours, 'HH');
+      var FrMinutes = moment(minutes, 'mm');
       //setTime('{$hours}:${minutes}')
-      hours = setHours(hours);
-      minutes = setMinutes(minutes);
+      hours = setHours(FrHours.format('HH'));
+      minutes = setMinutes(FrMinutes.format('mm'));
+      //setHours(hours.toString());
+      //setMinutes(minutes.toString());
     },
     [setVisible]
   );
@@ -70,9 +74,10 @@ const db = DatabaseConnection.getConnection();
     ({ hours, minutes }) => {
       setfinishVisible(false);
       console.log({ hours, minutes });
-      //setTime('{$hours}:${minutes}')
-      hours = setfinishHours(hours);
-      minutes = setfinishMinutes(minutes);
+      var FinHrs = moment(hours, 'HH');
+      var FinMnts = moment(minutes, 'mm');
+      hours = setfinishHours(FinHrs.format('HH'));
+      minutes = setfinishMinutes(FinMnts.format('mm'));
     },
     [setfinishVisible]
   );
@@ -92,7 +97,7 @@ const db = DatabaseConnection.getConnection();
     ({ hours, minutes }) => {
       setLfinishVisible(false);
       console.log({ hours, minutes });
-      setTime('{$hours}:${minutes}')
+      //setTime('{$hours}:${minutes}')
       hours = setfinishLunchHours(hours);
       minutes = setfinishLunchMinutes(minutes);
     },

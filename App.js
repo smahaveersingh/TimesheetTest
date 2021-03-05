@@ -6,7 +6,6 @@ import Login from './screens/login';
 import Home from './screens/Home';
 import Hour from './screens/Hour';
 import Header from './components/Header';
-import ListView from './screens/ListView';
 
 const screens = {
   Login: {
@@ -39,16 +38,6 @@ Hour:
         }
     },
 
-ListView:
-    {
-      screen: ListView,
-      navigationOptions:({ navigation }) => {
-      return {
-        headerTitle: () => <Header navigation={navigation} title='Timesheet' />,
-        headerLeft: () => null
-            }
-      }
-},
 
 }
 
