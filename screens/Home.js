@@ -19,7 +19,6 @@ export default function Home ({ navigation }) {
   const [FINHours, setFINHours] = React.useState('');
   const [FINMinutes, setFINMinutes] = React.useState('');
   const [Week, setWeek] = React.useState();
-  var thisWeek = moment();
   
     const pressHandler = () => 
     {
@@ -35,7 +34,7 @@ export default function Home ({ navigation }) {
     React.useEffect(() => {
       db.transaction((tx) => {
         tx.executeSql(
-          'SELECT * FROM Timesheet',
+          'SELECT A.* FROM Timesheet A INNER JOIN (SELECT date, dayoftheweek FROM Timesheet GROUP BY date, dayoftheweek HAVING COUNT(*) > 1) B ON A.date = B.date AND A.dayoftheweek = B.dayoftheweek',
           [],
           (tx, results) => {
             var temp = [];
@@ -47,12 +46,7 @@ export default function Home ({ navigation }) {
       });
     }, []);
 
-    const FormatTime = (item) => {
-      
-    }
-
-    const listItemView = (item) => {
-
+    const formatTime = (item) => {
       var SHours = moment(item.arrivalHours, 'HH');
       var SMinutes = moment(item.arrivalMinutes, 'mm');
 
@@ -64,28 +58,34 @@ export default function Home ({ navigation }) {
 
       setFINHours(FHours.format('HH'));
       setFINMinutes(FMinutes.format('mm'));
+    }
+
+
+    const listItemView = (item) => {
       
+    
       return (
         <View
           key={item.user_id}
           style={{ marginTop: 20, padding: 30, borderRadius: 10, width: 450, marginLeft: -50 }}>
+            
             <View style={{marginBottom: -30}}>
               <Collapse>
       <CollapseHeader style={{marginBottom: -10}}>
         <Separator>
-          <Text style={{fontWeight: 'bold'}}>{item.dayoftheweek}  ({item.totalHrs}  Hours)</Text>
+          <Text style={{fontWeight: 'bold'}}>{item.dayoftheweek}  ({item.totalHrs}  Hours) {item.date}</Text>
         </Separator>
       </CollapseHeader>
       <CollapseBody >
         <ListItem >
           <DataTable.Cell>{item.projNum}{'\n'}{item.siteID}</DataTable.Cell>
           <DataTable.Cell style={{marginLeft: -60}}>{Hours}:{Minutes}-{FINHours}:{FINMinutes}</DataTable.Cell>
+          
           <DataTable.Cell style={{marginLeft: -80}}>{item.comment}</DataTable.Cell>
         </ListItem>        
       </CollapseBody>
     </Collapse>
             </View>
-            
           </View>
       );
     };    
@@ -98,6 +98,7 @@ export default function Home ({ navigation }) {
            
           
           <View style={{ flex: 1 }}>
+          
             
               <FlatList
             style={{ marginTop: -20 }}

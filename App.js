@@ -6,8 +6,17 @@ import Login from './screens/login';
 import Home from './screens/Home';
 import Hour from './screens/Hour';
 import Header from './components/Header';
+import Onboarding from './screens/Onboarding';
 
 const screens = {
+
+  Onboarding: {
+    screen: Onboarding,
+    navigationOptions: {
+      title: null,
+    }
+  },
+
   Login: {
     screen: Login,
       navigationOptions:

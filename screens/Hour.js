@@ -15,11 +15,12 @@ const db = DatabaseConnection.getConnection();
 
   const selectDate = new Date();
   const [currentDate, setCurrentDate] = React.useState('');
+  
 
   const [dayoftheWeek, setDayoftheWeek] = React.useState('');
   const [projNum, setprojNum] = React.useState('');
   const [siteID, setsiteID] = React.useState('')
-  
+  const [Thrs, setThrs] = React.useState('');
   const [visible, setVisible] = React.useState(false);
   const [finishvisible, setfinishVisible] = React.useState(false);
   const [Lvisible, setLVisible] = React.useState(false);
@@ -53,7 +54,6 @@ const db = DatabaseConnection.getConnection();
     setLfinishVisible(false)
   }, [setLfinishVisible])
 
-  
 
   const onConfirm = React.useCallback(
     ({ hours, minutes }) => {
@@ -104,12 +104,7 @@ const db = DatabaseConnection.getConnection();
     [setLfinishVisible]
   );
 
-  const saveStartingWeek = (value) => {
-        moment.locale('en');
-        console.log("saveStartingWeek - value:", value);
-        setselectedWeek(moment(value).format('MMM Do'));
-        //setselectedWeek(new Date(value).toString());
-  }
+  
 
   const renderUserNames = () => {
     if(projNum=='VOD103015'){
@@ -133,29 +128,34 @@ const db = DatabaseConnection.getConnection();
   }
 
   React.useEffect(() => {
-    var date = new Date().getDate(); //Current Date
+    var tdate = new Date(); //Current Date
+    var Tday = tdate.getDay(); //Current Day
     var month = new Date().getMonth() + 1; //Current Month
     var year = new Date().getFullYear(); //Current Year
     var hours = new Date().getHours(); //Current Hours
     var min = new Date().getMinutes(); //Current Minutes
     var sec = new Date().getSeconds(); //Current Seconds
-    setCurrentDate(
-      date + '/' + month + '/' + year 
+    /*setCurrentDate(
+    
+      //date + '/' + month + '/' + year 
       //+ ' ' + hours + ':' + min + ':' + sec
-    );
+      moment(tdate).format("YYYY-MM-DD")
+  );*/
   }, []);
 
   /*var momentObj = moment(currentDate + Hours + Minutes, 'YYYY-MM-DDLT');
   var dateTime = momentObj.format('YYYY-MM-DDTHH:mm:s');
   console.log(dateTime);*/
 
+  
+
   const add_entry = () => {
-    console.log( selectedWeek, currentDate, projNum, description, Hours, Minutes, finishHours, finishMinutes, LunchHours, LunchMinutes,  finishLunchHours, finishLunchMinutes,  0, siteID, dayoftheWeek);
+    console.log( selectedWeek, currentDate, projNum, description, Hours, Minutes, finishHours, finishMinutes, LunchHours, LunchMinutes,  finishLunchHours, finishLunchMinutes,  Thrs, siteID, dayoftheWeek);
 
     db.transaction(function (tx) {
       tx.executeSql(
         'INSERT INTO Timesheet(user_id, eow, date, projNum, comment , arrivalHours , arrivalMinutes,  departHours, departMinutes, startLHours, startLMinutes, FinishLHours, FinishLMinutes,  totalHrs, siteID, dayoftheweek) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-        [1, selectedWeek, currentDate, projNum, description, Hours, Minutes, finishHours, finishMinutes, LunchHours, LunchMinutes, finishLunchHours, finishLunchMinutes,   0, siteID, dayoftheWeek ],
+        [1, selectedWeek, currentDate, projNum, description, Hours, Minutes, finishHours, finishMinutes, LunchHours, LunchMinutes, finishLunchHours, finishLunchMinutes,   Thrs, siteID, dayoftheWeek ],
         (tx, results) => {
           console.log('Results', results.rowsAffected);
           if (results.rowsAffected > 0) {
@@ -178,7 +178,71 @@ const db = DatabaseConnection.getConnection();
 
   let options  = renderUserNames();
 
-  
+  const saveDayofWeek = (itemValue, itemIndex) => {
+    setDayoftheWeek(itemValue);
+    /*if (dayoftheWeek == 'monday') {
+      setCurrentDate(moment(selectedWeek, "DD-MM-YYYY").add(1, 'days'));
+    } else if (dayoftheWeek == 'tuesday') {
+      setCurrentDate(moment(selectedWeek).add(2, 'days').format("DD-MM-YYYY"));
+    } else if (dayoftheWeek == 'wednesday') {
+      setCurrentDate(moment(selectedWeek, "DD-MM-YYYY").add(3, 'days'));
+    } else if (dayoftheWeek == 'thursday') {
+      setCurrentDate(moment(selectedWeek, "DD-MM-YYYY").add(4, 'days'));
+    } else if (dayoftheWeek == 'friday') {
+      setCurrentDate(moment(selectedWeek, "DD-MM-YYYY").add(5, 'days'));
+    } else if (dayoftheWeek == 'saturday') {
+      setCurrentDate(moment(selectedWeek, "DD-MM-YYYY").add(6, 'days'));
+    } else if (dayoftheWeek == 'sunday') {
+      setCurrentDate(moment(selectedWeek, "DD-MM-YYYY").add(7, 'days'));
+    }*/
+
+    var next = getNextDay(itemValue);
+    //console.log(next.getTime());
+    console.log(moment(next.getTime()).format('L'));
+    setCurrentDate(moment(next.getTime()).format('L'));
+  }
+
+  const getNextDay = (dayName) => {
+    var todayDate = new Date(selectedWeek);
+    var now = todayDate.getDay();
+
+    // Days of the week
+	var days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+	// The index for the day you want
+	var day = days.indexOf(dayName.toLowerCase());
+
+  // Find the difference between the current day and the one you want
+	// If it's the same day as today (or a negative number), jump to the next week
+	var diff = day - now;
+	diff = diff < 1 ? diff : diff;
+
+	// Get the timestamp for the desired day
+	var nextDayTimestamp = todayDate.getTime() + (1000 * 60 * 60 * 24 * diff);
+
+	// Get the next day
+	return new Date(nextDayTimestamp);
+
+  }
+
+  const saveStartingWeek = (value) => {
+        moment.locale('en');
+        console.log("saveStartingWeek - value:", moment(value).format('L'));
+        setselectedWeek(moment(value).format('L'));
+        //setselectedWeek(new Date(value).toString());
+
+  }
+
+  const CalcTotalHrs = () => {
+    var StrtTime = moment(Hours, "HH");
+    var endTime = moment(finishHours, "HH");
+
+    var duration = moment.duration(StrtTime.diff(endTime));
+    var DHrs = parseInt(duration.asHours());
+    setThrs(DHrs);
+    Alert.alert(DHrs + 'Hrs');
+
+  }
 
   return (
         <SafeAreaView style={styles.container}>
@@ -187,7 +251,7 @@ const db = DatabaseConnection.getConnection();
             <Text style={{fontWeight: 'bold'}}>Week Ending: {selectedWeek}</Text>
         <WeekSelector
             dateContainerStyle={styles.date}
-            whitelistRange={[new Date(2018, 7, 13), new Date()]}
+            whitelistRange={[new Date(2021, 1, 9), new Date()]}
             weekStartsOn={6}
             onWeekChanged={saveStartingWeek}
           />
@@ -202,7 +266,7 @@ const db = DatabaseConnection.getConnection();
                     selectedValue={dayoftheWeek}
                     onValueChange=
                     {
-                        (itemValue, itemIndex) => setDayoftheWeek(itemValue)
+                        saveDayofWeek
                     }>
                             <Picker.Item label="Monday" value="monday" />
                             <Picker.Item label="Tuesday" value="tuesday" />
