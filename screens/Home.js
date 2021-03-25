@@ -225,7 +225,7 @@ export default function Home ({ navigation }) {
               
               </TouchableHighlight>
               <Text style={styles.columnRowTxt}>{item.siteID}</Text>
-              <Text style={styles.columnRowTxt}>{item.arrivalHours}:{item.arrivalMinutes}/{item.departHours}:{item.departMinutes}</Text>
+              <Text style={styles.columnRowTxt}>{item.arrival}/{item.depart}</Text>
               <Text style={styles.columnRowTxt}>{item.totalHrs}</Text>
             </View>
               )
