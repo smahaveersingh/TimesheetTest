@@ -17,6 +17,7 @@
     "@formatjs/intl-numberformat": "^6.2.1",
     "@formatjs/intl-pluralrules": "^4.0.10",
     "@formatjs/intl-relativetimeformat": "^8.1.1",
+    "@react-native-community/checkbox": "^0.5.7",
     "@react-native-community/datetimepicker": "^3.0.9",
     "@react-native-picker/picker": "^1.9.11",
     "accordion-collapse-react-native": "^1.0.0",

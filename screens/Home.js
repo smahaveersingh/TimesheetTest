@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { StyleSheet, View, Text, FlatList, SafeAreaView,} from 'react-native';
-import { Button, DataTable, Portal } from 'react-native-paper';
+import { StyleSheet, View, Text, FlatList, SafeAreaView, TouchableHighlight} from 'react-native';
+import { Button, DataTable, Portal, } from 'react-native-paper';
 import { Collapse, CollapseHeader, CollapseBody } from "accordion-collapse-react-native";
 import { Picker } from '@react-native-picker/picker';
 import { Thumbnail, ListItem, Separator, Item } from 'native-base';
@@ -30,11 +30,17 @@ export default function Home ({ navigation }) {
   const [ columns, setColumns ] = React.useState([
     "Project",
     "Site",
-    "Start/End"
+    "Start/End",
+    "Total"
   ])
   const [ direction, setDirection ] = React.useState(null)
   const [ selectedColumn, setSelectedColumn ] = React.useState(null)
 
+  _onPressButton  = () => {
+    alert(
+      <Text>pop</Text>
+        )
+      }
   
     const pressHandler = () => 
     {
@@ -214,7 +220,10 @@ export default function Home ({ navigation }) {
             renderItem={({ item, index }) => {
               return (
                 <View style={{...styles.tableRow, backgroundColor: index % 2 == 1 ? "#F0FBFC" : "white"}}>
-              <Text style={{...styles.columnRowTxt, fontWeight:"bold"}}>{item.projNum}</Text>
+              <TouchableHighlight onPress={() => {alert(item.totalHrs)}}>
+                <Text style={{...styles.columnRowTxt, fontWeight:"bold", width: 80}}>{item.projNum}</Text>
+              
+              </TouchableHighlight>
               <Text style={styles.columnRowTxt}>{item.siteID}</Text>
               <Text style={styles.columnRowTxt}>{item.arrivalHours}:{item.arrivalMinutes}/{item.departHours}:{item.departMinutes}</Text>
               <Text style={styles.columnRowTxt}>{item.totalHrs}</Text>
@@ -222,13 +231,14 @@ export default function Home ({ navigation }) {
               )
             }} 
           />
-          <StatusBar style="auto" />
+         
           </View>
-            <View style={{marginTop: 450}}>
+            <View style={{marginTop: 150}}>
              <Button icon="plus" onPress={pressHandler}>
                 Add Entry
            </Button>
            </View>
+            <StatusBar style="auto" />
            </View>
             
         </SafeAreaView>
@@ -350,7 +360,7 @@ export default function Home ({ navigation }) {
             },
             tableRow: {
               flexDirection: "row",
-              height: 40,
+              height: 50,
               alignItems:"center",
             },
             columnHeader: {
@@ -363,7 +373,7 @@ export default function Home ({ navigation }) {
               fontWeight: "bold",
             },
             columnRowTxt: {
-              width:"25%",
+              width:"20%",
               textAlign:"center",
               
             }
