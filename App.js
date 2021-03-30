@@ -7,6 +7,7 @@ import Home from './screens/Home';
 import Hour from './screens/Hour';
 import Header from './components/Header';
 import Onboarding from './screens/Onboarding';
+import ListView from './screens/ListView';
 
 const screens = {
 
@@ -46,6 +47,18 @@ Hour:
           }
         }
     },
+
+    ListView: {
+      screen: ListView,
+      navigationOptions:({ navigation }) => {
+        return {
+          headerTitle: () => <Header navigation={navigation} title='Enter hours' />,
+          headerLeft: () => null
+              }
+            }
+    }
+
+    
 
 
 }

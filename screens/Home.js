@@ -1,16 +1,15 @@
 import * as React from 'react';
-import { StyleSheet, View, Text, FlatList, SafeAreaView, TouchableHighlight} from 'react-native';
-import { Button, DataTable, Portal, } from 'react-native-paper';
-import { Collapse, CollapseHeader, CollapseBody } from "accordion-collapse-react-native";
+import { StyleSheet, View, Text, FlatList, SafeAreaView, TouchableHighlight, StatusBar} from 'react-native';
+import { Button, DataTable, Card } from 'react-native-paper';
 import { Picker } from '@react-native-picker/picker';
-import { Thumbnail, ListItem, Separator, Item } from 'native-base';
 import moment from 'moment';
 import WeekSelector from 'react-native-week-selector';
-import { StatusBar } from 'expo-status-bar';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, AntDesign } from '@expo/vector-icons';
 import _ from "lodash";
+import Dialog from "react-native-dialog";
 import { DatabaseConnection } from '../components/database-connection';
 import { TouchableOpacity } from 'react-native';
+import { colors } from 'react-native-elements';
 
 const db = DatabaseConnection.getConnection();
 
@@ -27,20 +26,44 @@ export default function Home ({ navigation }) {
   const [Week, setWeek] = React.useState();
   const [currentDate, setCurrentDate] = React.useState('');
   const [formatDay, setformatDay] = React.useState('');
+  const [visible, setVisible] = React.useState(false);
   const [ columns, setColumns ] = React.useState([
     "Project",
     "Site",
     "Start/End",
     "Total"
   ])
-  const [ direction, setDirection ] = React.useState(null)
-  const [ selectedColumn, setSelectedColumn ] = React.useState(null)
+  const [ direction, setDirection ] = React.useState(null);
+  const [ selectedColumn, setSelectedColumn ] = React.useState(null);
+  const [totalHrsforday, settotalHrsforday] = React.useState([]);
 
-  _onPressButton  = () => {
+  /*_onPressButton  = () => {
     alert(
       <Text>pop</Text>
         )
+      }*/
+
+      const colors = {
+        themeColor: "#4263ec",
+        white: "#fff",
+        background: "#f4f6fc",
+        greyish: "#a4a4a4",
+        tint: "#2b49c3",
       }
+
+      const showDialog = () => {
+        setVisible(true);
+      };
+    
+      const handleCancel = () => {
+        setVisible(false);
+      };
+  
+      const handleDelete = () => {
+        // The user has pressed the "Delete" button, so here you can do your own logic.
+        // ...Your logic
+        setVisible(false);
+      };
   
     const pressHandler = () => 
     {
@@ -62,14 +85,14 @@ export default function Home ({ navigation }) {
       var now = todayDate.getDay();
   
       // Days of the week
-    var days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    var daysoftheweek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
   
     // The index for the day you want
-    var day = days.indexOf(dayName.toLowerCase());
+    var Indexofday = daysoftheweek.indexOf(dayName.toLowerCase());
   
     // Find the difference between the current day and the one you want
     // If it's the same day as today (or a negative number), jump to the next week
-    var diff = day - now;
+    var diff = Indexofday - now;
     diff = diff < 1 ? diff : diff;
   
     // Get the timestamp for the desired day
@@ -86,7 +109,7 @@ export default function Home ({ navigation }) {
         setWeek(moment(value).format('L'));
     }
 
-    React.useEffect(() => {
+    /*React.useEffect(() => {
       db.transaction((tx) => {
         tx.executeSql(
           'SELECT * FROM Timesheet',
@@ -99,7 +122,143 @@ export default function Home ({ navigation }) {
           }
         );
       });
-    }, []);
+    }, []);*/
+
+    const filterTimeFormat = (time) => {
+      var decimal_places = 2;
+
+      // Maximum number of hours before we should assume minutes were intended. Set to 0 to remove the maximum.
+      var maximum_hours = 15;
+    
+      // 3
+      var int_format = time.match(/^\d+$/);
+      
+      // 1:15
+      var time_format = time.match(/([\d]*):([\d]+)/);
+      console.log('time_format: ' + time_format);
+      // 10m
+      var minute_string_format = time.toLowerCase().match(/([\d]+)m/);
+    
+      // 2h
+      var hour_string_format = time.toLowerCase().match(/([\d]+)h/);
+    
+      // if (minutes >= 60) {
+      //     minutes = minutes - 60;
+      //     hours = hours + 1;
+      //     console.log('min: ' + minutes)
+      //   }
+        
+      if (time_format != null) {
+        var hours = parseInt(time_format[1]);
+        var minutes = parseFloat(time_format[2]/60);
+         if (minutes >= 0) {
+           console.log('greater!!!!');
+         }
+          var time = hours + minutes;
+        
+        
+      } else if (minute_string_format != null || hour_string_format != null) {
+        if (hour_string_format != null) {
+          hours = parseInt(hour_string_format[1]);
+        } else {
+          hours = 0;
+        }
+        if (minute_string_format != null) {
+          minutes = parseFloat(minute_string_format[1]/60);
+          
+        } else {
+          minutes = 0;
+        }
+        time = hours + minutes;
+      } else if (int_format != null) {
+        // Entries over 15 hours are likely intended to be minutes.
+        time = parseInt(time);
+        if (maximum_hours > 0 && time > maximum_hours) {
+          time = (time/60).toFixed(decimal_places);
+        }
+      }
+    
+      // make sure what ever we return is a 2 digit float
+      time = parseFloat(time).toFixed(decimal_places);
+    
+      return time;  
+    }
+
+   
+    
+    let SearchEntry = () => {
+      db.transaction((tx) => {
+     tx.executeSql(
+      'SELECT * FROM Timesheet WHERE date = ?',
+      [currentDate],
+       (tx, results) => {
+         //var temp = [];
+         //for (let i = 0; i < results.rows.length; ++i)
+           //temp.push(results.rows.item(i));
+         //setFlatListItems(temp);
+         var temp = [];
+         var len = results.rows.length;
+
+         console.log('len', len);
+         if(len >= 0 ) {
+          
+           for (let i = 0; i < results.rows.length; ++i) 
+          
+           temp.push(results.rows.item(i));
+           setFlatListItems(temp);
+ console.log(temp)
+         } else {
+           alert('Cannot Search Entry!');
+         }
+                       }
+     );
+                     });
+
+          db.transaction((tx) => {
+          tx.executeSql(
+          'SELECT totalHrs FROM Timesheet WHERE date = ?',
+          [currentDate],
+          (tx, results) => {
+          //var temp = [];
+          //for (let i = 0; i < results.rows.length; ++i)
+          //temp.push(results.rows.item(i));
+          //setFlatListItems(temp);
+          var temp = [];
+          let sum = 0.0 ;
+          var tot = [];
+          var len = results.rows.length;
+
+          console.log('len', len);
+          if(len >= 0 ) {
+
+          for (let i = 0; i < results.rows.length; ++i) 
+
+          temp.push(results.rows.item(i));
+          temp.forEach((item) => {
+            
+            tot.push(filterTimeFormat(item.totalHrs));
+           
+            //sum = sum + parseFloat(item.totalHrs);
+            
+            
+            //moment(item.totalHrs, "HH:mm")
+          })
+          tot.forEach(function (i){
+            sum = sum + parseFloat(i);
+          })
+          settotalHrsforday(sum);
+          console.log('sum: ' + sum + ' TOT: ' + tot);
+          totalHrsforday
+          } else {
+          alert('Cannot Search Entry!');
+          }
+        }
+            
+          );
+          });
+};
+
+
 
     const formatTime = (item) => {
       var SHours = moment(item.arrivalHours, 'HH');
@@ -148,41 +307,20 @@ export default function Home ({ navigation }) {
         }
       </View>
     )
-
-
-    const listItemView = (item) => {
-      return (
-        <View
-          key={item.user_id}
-          style={{ marginTop: 20, padding: 30, borderRadius: 10, width: 450, marginLeft: -50 }}>
-            
-            <View style={{marginBottom: -30}}>
-              <Collapse>
-      <CollapseHeader style={{marginBottom: -10}}>
-        <Separator>
-          <Text style={{fontWeight: 'bold'}}>{item.dayoftheweek}  ({item.totalHrs}  Hours) {item.date}</Text>
-        </Separator>
-      </CollapseHeader>
-      <CollapseBody >
-        <ListItem >
-          <DataTable.Cell>{item.projNum}{'\n'}{item.siteID}</DataTable.Cell>
-          <DataTable.Cell style={{marginLeft: -60}}>{Hours}:{Minutes}-{FINHours}:{FINMinutes}</DataTable.Cell>
-          
-          <DataTable.Cell style={{marginLeft: -80}}>{item.comment}</DataTable.Cell>
-        </ListItem>        
-      </CollapseBody>
-    </Collapse>
-            </View>
-          </View>
-      );
-    };    
+  
   
    
    
       return (
         <SafeAreaView style={{ flex: 1}}>
-          <View style={styles.container}>
-          <View style={{marginLeft: -200, marginTop: -650}}>
+          <View style={{backgroundColor: colors.white,
+         alignItems: 'center',
+           justifyContent: 'center',
+           flex: 1,
+           paddingBottom: 150}}>
+             <StatusBar barStyle="light-content" backgroundColor={colors.themeColor} />
+          <View style={{marginLeft: -200, marginBottom: 615, backgroundColor: '#FFF0E0', height: 50, borderColor: 'black', borderWidth: 3, borderRadius: 4 }}>
+          
           <WeekSelector
             whitelistRange={[new Date(2018, 7, 13), new Date()]}
             weekStartsOn={6}
@@ -210,23 +348,54 @@ export default function Home ({ navigation }) {
                            
                             </Picker>
           </View>
-          <View style={{flex: 0, marginTop: -100, alignContent: 'center', marginLeft: 130, width: 500, marginBottom: -100}}>
+
+          <View style={{flex: 0, marginTop: -100, alignContent: 'center', marginLeft: 100, width: 500, marginBottom: -100,}}>
+            <Card style={{paddingRight: 150, borderRadius: 5, marginLeft: 30}}>
+              <Text style={{backgroundColor: "#42f599", paddingRight: 60, paddingHorizontal: 20, borderRadius: 10, height: 35, fontSize: 20, fontWeight: 'bold', width: 265}}>Day Total Hours:  {totalHrsforday}</Text>
+            </Card>
             <FlatList
             data={flatListItems}
-            style={{width:"90%", marginLeft: 10}}
+            style={{width:"90%", marginLeft: 10, marginTop: 30}}
             ListHeaderComponent={tableHeader}
             stickyHeaderIndices={[0]}
+            nestedScrollEnabled
             keyExtractor={(item, index) => index+""}
             renderItem={({ item, index }) => {
               return (
                 <View style={{...styles.tableRow, backgroundColor: index % 2 == 1 ? "#F0FBFC" : "white"}}>
-              <TouchableHighlight onPress={() => {alert(item.totalHrs)}}>
+              <TouchableHighlight onPress={showDialog}>
                 <Text style={{...styles.columnRowTxt, fontWeight:"bold", width: 80}}>{item.projNum}</Text>
               
               </TouchableHighlight>
               <Text style={styles.columnRowTxt}>{item.siteID}</Text>
               <Text style={styles.columnRowTxt}>{item.arrival}/{item.depart}</Text>
               <Text style={styles.columnRowTxt}>{item.totalHrs}</Text>
+              <Dialog.Container visible={visible}>
+              <Dialog.Title>
+                <Text>{item.projNum } {" "} {item.siteID}</Text>
+                </Dialog.Title>
+              <Dialog.Description>
+                Day : {item.dayoftheweek} 
+              </Dialog.Description>
+              <Dialog.Description>
+                Project Number : {item.projNum}
+                </Dialog.Description>
+              <Dialog.Description>
+                Site ID : {item.siteID}
+                </Dialog.Description>
+              <Dialog.Description>
+                Start Hours : {item.arrival}
+                {" "} End Hours : {item.depart}
+                </Dialog.Description>
+              <Dialog.Description>
+                Total Hrs : {item.totalHrs} {" "} {totalHrsforday}
+                </Dialog.Description>
+              <Dialog.Description>
+                Description: {item.comment}
+              </Dialog.Description>
+              <Dialog.Button label="Edit" onPress={handleCancel} />
+              <Dialog.Button label="Delete" onPress={handleDelete} />
+            </Dialog.Container>
             </View>
               )
             }} 
@@ -236,6 +405,9 @@ export default function Home ({ navigation }) {
             <View style={{marginTop: 150}}>
              <Button icon="plus" onPress={pressHandler}>
                 Add Entry
+           </Button>
+           <Button icon="magnify" onPress={SearchEntry}>
+                Search
            </Button>
            </View>
             <StatusBar style="auto" />
@@ -257,11 +429,11 @@ export default function Home ({ navigation }) {
    
    const styles = StyleSheet.create({
        container:{
-         backgroundColor: '#fff',
+         backgroundColor: colors.themeColor,
          alignItems: 'center',
            justifyContent: 'center',
            flex: 1,
-           paddingTop: 80
+           paddingBottom: 150
            },
            
          text:{

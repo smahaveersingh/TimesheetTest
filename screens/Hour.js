@@ -41,6 +41,8 @@ const db = DatabaseConnection.getConnection();
   const [description, setDescription] = React.useState('');
   const [selectedWeek, setselectedWeek] = React.useState();
 
+  var timeList = []; // variable to store time values to check for overlaps
+
   const onDismiss = React.useCallback(() => {
     setVisible(false)
   }, [setVisible])
@@ -49,13 +51,11 @@ const db = DatabaseConnection.getConnection();
     setfinishVisible(false)
   }, [setfinishVisible])
 
-  const onLDismiss = React.useCallback(() => {
-    setLVisible(false)
-  }, [setLVisible])
+  const pressHandler = () => 
+    {
+      navigation.navigate('ListView')
+    }
 
-  const onLFinishDismiss = React.useCallback(() => {
-    setLfinishVisible(false)
-  }, [setLfinishVisible])
 
 
   const onConfirm = React.useCallback(
@@ -85,34 +85,14 @@ const db = DatabaseConnection.getConnection();
       hours = setfinishHours(FinHrs.format('HH'));
       minutes = setfinishMinutes(FinMnts.format('mm'));
       var Fintimes = FinHrs.format('HH') + ':' + FinMnts.format('mm');
-      console.log('Finish Times: ' + Fintimes);
+      console.log('Finish Times: ' + moment(Fintimes, 'HH:mm').format('HH:mm'));
       setfrFinTimes(Fintimes);
       
     },
     [setfinishVisible]
   );
 
-  const onLConfirm = React.useCallback(
-    ({ hours, minutes }) => {
-      setLVisible(false);
-      console.log({ hours, minutes });
-      //setTime('{$hours}:${minutes}')
-      hours = setLunchHours(hours);
-      minutes = setLunchMinutes(minutes);
-    },
-    [setLVisible]
-  );
 
-  const onLFinishConfirm = React.useCallback(
-    ({ hours, minutes }) => {
-      setLfinishVisible(false);
-      console.log({ hours, minutes });
-      //setTime('{$hours}:${minutes}')
-      hours = setfinishLunchHours(hours);
-      minutes = setfinishLunchMinutes(minutes);
-    },
-    [setLfinishVisible]
-  );
 
   
 
@@ -196,8 +176,8 @@ const db = DatabaseConnection.getConnection();
 {
     db.transaction(function (tx) {
       tx.executeSql(
-        'INSERT INTO Timesheet(user_id, eow, date, projNum, comment , arrivalHours , arrivalMinutes,  departHours, departMinutes, startLHours, startLMinutes, FinishLHours, FinishLMinutes,  totalHrs, siteID, dayoftheweek) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-        [1, selectedWeek, currentDate, 'Lunch', 'Lunch', Hours, Minutes, finishHours, finishMinutes, 0, 0, 0, 0, 0, 'Lunch', dayoftheWeek ],
+        'INSERT INTO Timesheet(user_id, eow, date, projNum, comment , arrival ,  depart,  totalHrs, siteID, dayoftheweek) VALUES (?,?,?,?,?,?,?,?,?,?)',
+        [1, selectedWeek, currentDate, 'Lunch', 'Lunch', frTimes, frFinTimes, Thrs, 'Lunch', dayoftheWeek ],
         (tx, results) => {
           console.log('Results', results.rowsAffected);
           if (results.rowsAffected > 0) {
@@ -218,7 +198,7 @@ const db = DatabaseConnection.getConnection();
           } else alert('Error Entry unsuccesfull !!!');
         }
       );
-      save()
+      
     });
   }
 
@@ -226,12 +206,12 @@ const db = DatabaseConnection.getConnection();
 {
   db.transaction(function (tx) {
     tx.executeSql(
-      'INSERT INTO Timesheet(user_id, eow, date, projNum, comment , arrivalHours , arrivalMinutes,  departHours, departMinutes, startLHours, startLMinutes, FinishLHours, FinishLMinutes,  totalHrs, siteID, dayoftheweek) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-      [1, selectedWeek, moment(selectedWeek).day("Monday").format('dddd, MMMM Do YYYY'), 'Lunch', 'Lunch', Hours, Minutes, finishHours, finishMinutes, 0, 0, 0, 0, 0, 'Lunch', dayoftheWeek , 
-      1, selectedWeek, moment(selectedWeek).day("Tuesday").format('dddd, MMMM Do YYYY'), 'Lunch', 'Lunch', Hours, Minutes, finishHours, finishMinutes, 0, 0, 0, 0, 0, 'Lunch', dayoftheWeek , 
-      1, selectedWeek, moment(selectedWeek).day("Wednesday").format('dddd, MMMM Do YYYY'), 'Lunch', 'Lunch', Hours, Minutes, finishHours, finishMinutes, 0, 0, 0, 0, 0, 'Lunch', dayoftheWeek ,
-      1, selectedWeek, moment(selectedWeek).day("Thursday").format('dddd, MMMM Do YYYY'), 'Lunch', 'Lunch', Hours, Minutes, finishHours, finishMinutes, 0, 0, 0, 0, 0, 'Lunch', dayoftheWeek ,
-      1, selectedWeek, moment(selectedWeek).day("Friday").format('dddd, MMMM Do YYYY'), 'Lunch', 'Lunch', Hours, Minutes, finishHours, finishMinutes, 0, 0, 0, 0, 0, 'Lunch', dayoftheWeek ],
+      'INSERT INTO Timesheet(user_id, eow, date, projNum, comment , arrival ,  depart,  totalHrs, siteID, dayoftheweek) VALUES (?,?,?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?,?,?)',
+      [1, selectedWeek, moment(selectedWeek).day("Monday").format('dddd, MMMM Do YYYY'), 'Lunch', 'Lunch', frTimes, frFinTimes, Thrs, 'Lunch', dayoftheWeek , 
+      1, selectedWeek, moment(selectedWeek).day("Tuesday").format('dddd, MMMM Do YYYY'), 'Lunch', 'Lunch', frTimes, frFinTimes, Thrs, 'Lunch', dayoftheWeek ,  
+      1, selectedWeek, moment(selectedWeek).day("Wednesday").format('dddd, MMMM Do YYYY'), 'Lunch', 'Lunch', frTimes, frFinTimes, Thrs, 'Lunch', dayoftheWeek , 
+      1, selectedWeek, moment(selectedWeek).day("Thursday").format('dddd, MMMM Do YYYY'), 'Lunch', 'Lunch', frTimes, frFinTimes, Thrs, 'Lunch', dayoftheWeek , 
+      1, selectedWeek, moment(selectedWeek).day("Friday").format('dddd, MMMM Do YYYY'), 'Lunch', 'Lunch',frTimes, frFinTimes, Thrs, 'Lunch', dayoftheWeek ,  ],
       (tx, results) => {
         console.log('Results', results.rowsAffected);
         if (results.rowsAffected > 0) {
@@ -252,7 +232,7 @@ const db = DatabaseConnection.getConnection();
         } else alert('Error Entry unsuccesfull !!!');
       }
     ); 
-    save()
+    
   });
  
 }
@@ -310,6 +290,22 @@ const db = DatabaseConnection.getConnection();
 
     return moment.utc().hours(h).minutes(m).format("HH:mm");
   }
+
+  // const splitTime = (time) => {  //function to split time in hours and minutes seperatly
+  //   var today = new Date();
+  //   var _t = time.split(";");
+  //   today.setHours(_t[0], _t[1], 0, 0);
+  //   return today;
+  // }
+
+  // const validate = (sTime, eTime) => {
+  //   if(+splitTime(sTime) < +splitTime(eTime)) {
+  //     var len = timeList.length;
+  //     return len>0?(+splitTime(timeList[len - 1].e))
+  //   }
+  // }
+
+  var range = moment
 
    const calcTotalHrs = () => {
     //setfinishVisible(true)
@@ -441,37 +437,8 @@ const db = DatabaseConnection.getConnection();
         Finish: {frFinTimes}
       </Button>
       
-      <TimePickerModal
-        visible={Lvisible}
-        onDismiss={onLDismiss}
-        onConfirm={onLConfirm}
-        hours={12} // default: current hours
-        minutes={14} // default: current minutes
-        label="Select time" // optional, default 'Select time'
-        cancelLabel="Cancel" // optional, default: 'Cancel'
-        confirmLabel="Ok" // optional, default: 'Ok'
-        animationType="fade" // optional, default is 'none'
-        locale={'en'} // optional, default is automically detected by your system
-      />
-           <Button color="#09253a" style={styles.startLunch} icon="food" onPress={()=> setLVisible(true)}>
-        Lunch : {LunchHours}:{LunchMinutes}
-      </Button>
-
-      <TimePickerModal
-        visible={Lfinishvisible}
-        onDismiss={onLFinishDismiss}
-        onConfirm={onLFinishConfirm}
-        hours={12} // default: current hours
-        minutes={0} // default: current minutes
-        label="Select time" // optional, default 'Select time'
-        cancelLabel="Cancel" // optional, default: 'Cancel'
-        confirmLabel="Ok" // optional, default: 'Ok'
-        animationType="fade" // optional, default is 'none'
-        locale={'en'} // optional, default is automically detected by your system
-      />
-      <Button color="#09253a" style={styles.endLunch} icon="food" onPress={()=> setLfinishVisible(true)}>
-        Finishes : {finishLunchHours}:{finishLunchMinutes}
-      </Button>
+      
+      
 
       <TextInput 
       placeholder="  Description"
@@ -481,7 +448,7 @@ const db = DatabaseConnection.getConnection();
       
       />
 
-      <Button onPress={calcTotalHrs}>
+      <Button onPress={pressHandler}>
           Total hrs: {Thrs}
       </Button>
 

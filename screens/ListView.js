@@ -1,0 +1,150 @@
+import * as React from 'react';
+import { StatusBar, FlatList, Image, Animated, Text, View, Dimensions, StyleSheet, TouchableOpacity, Easing, SafeAreaViewBase, SafeAreaView } from 'react-native';
+const { width, height } = Dimensions.get('screen');
+import faker from 'faker';
+import WeekSelector from 'react-native-week-selector';
+import { DatabaseConnection } from '../components/database-connection';
+import moment from 'moment';
+import { IconButton } from 'react-native-paper';
+import { CircularCard } from "react-native-circular-card-view";
+
+const db = DatabaseConnection.getConnection();
+
+const BG_IMG = 'https://i2.wp.com/9to5mac.com/wp-content/uploads/sites/6/2019/08/LightBlue-iOS-13-Home-app-wallpaper.png?quality=82&strip=all&ssl=1';
+
+const SPACING = 20;
+const AVATAR_SIZE = 70;
+const ITEM_SIZE = AVATAR_SIZE + SPACING *3;
+
+export default function ListView({ navigation }) {
+    const [flatListItems, setFlatListItems] = React.useState([]);
+    const [selectedWeek, setselectedWeek] = React.useState();
+
+    const pressHandler = () => 
+    {
+    navigation.navigate('Home')
+    }
+    const saveStartingWeek = (value) => {
+    moment.locale('en');
+    console.log("saveStartingWeek - value:", moment(value).format('L'));
+    setselectedWeek(moment(value).format('L'));
+    }
+
+    const scrollY = React.useRef(new Animated.Value(0)).current;         
+
+      let SearchEntry = () => {
+        db.transaction((tx) => {
+       tx.executeSql(
+        'SELECT * FROM Timesheet WHERE eow = ?',
+        [selectedWeek],
+         (tx, results) => {
+           //var temp = [];
+           //for (let i = 0; i < results.rows.length; ++i)
+             //temp.push(results.rows.item(i));
+           //setFlatListItems(temp);
+           var temp = [];
+           var len = results.rows.length;
+  
+           console.log('len', len);
+           if(len >= 0 ) {
+            
+             for (let i = 0; i < results.rows.length; ++i) 
+            
+             temp.push(results.rows.item(i));
+             setFlatListItems(temp);
+   console.log(temp)
+           } else {
+             alert('Cannot Search Entry!');
+           }
+                         }
+       );
+                       });
+                    }
+
+
+    return ( 
+        <View style={{flex: 1, backgroundColor: '#fff', paddingTop: 30}}>
+        <Image 
+        source={{uri: BG_IMG}}
+        style={StyleSheet.absoluteFillObject}
+        blurRadius={80}
+        />
+        <View style={{
+            height: 100,
+            width:370,
+            marginLeft: 20
+        }}>
+            
+
+            <Text style={{fontWeight: '700', fontSize: 25, marginBottom: 12, color: 'black'}}>  Week Ending: {moment(selectedWeek).format('MMM Do')}</Text>
+        <WeekSelector
+            whitelistRange={[new Date(2021, 1, 9), new Date()]}
+            weekStartsOn={6}
+            onWeekChanged={saveStartingWeek}
+          />
+          <IconButton icon="magnify" size={45} style={{marginLeft: 290, marginBottom: 0, position: 'absolute', backgroundColor: '#d65187'}} onPress={SearchEntry} />
+          </View>
+        <Animated.FlatList 
+        data={flatListItems}
+        onScroll={
+            Animated.event(
+                [{nativeEvent: {contentOffset: {y: scrollY}}}],
+                [{ useNativeDriver: true}]
+            )
+        }
+        keyExtractor={item => item.key}
+        contentContainerStyle={{
+            padding: SPACING,
+            paddingTop: StatusBar.currentHeight
+        }}
+        renderItem={({item, index}) => {
+            const inputRange = [
+                -1,
+                0,
+                ITEM_SIZE * index,
+                ITEM_SIZE * (index + 2)
+            ]
+            const opacityInputRange = [
+                -1,
+                0,
+                ITEM_SIZE * index,
+                ITEM_SIZE * (index + 1)
+            ]
+
+            const scale = scrollY.interpolate({
+                inputRange,
+                outputRange: [1, 1, 1, 0]
+            })
+
+            const opacity = scrollY.interpolate({
+                inputRange: opacityInputRange,
+                outputRange: [1, 1, 1, 0]
+            })
+
+
+            return <Animated.View style={{flexDirection: 'row', padding: SPACING, marginBottom: SPACING, backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 12,
+                shadowColor: '#000',
+                shadowOffset: {
+                    width: 0,
+                    height: 10
+                },
+                shadowOpacity: 0.3,
+                shadowRadius: 20,
+                opacity,
+                transform: [{scale}]
+            }}>
+                <Image 
+                    source={{uri: 'https://cdn5.f-cdn.com/contestentries/1503819/34508403/5ce0587fe3d17_thumb900.jpg'}}
+                    style={{width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: AVATAR_SIZE}}
+                />
+                <View>
+                    <Text style={{fontWeight: '700', fontSize: 22}}>  {item.arrival} - {item.depart}     [{item.totalHrs}]</Text>
+                    <Text style={{opacity: .7, fontSize: 28}}>  {item.projNum}</Text>
+                    <Text style={{opacity: .8, fontSize: 14, color: '#0099cc'}}>    {item.siteID}</Text> 
+                </View>
+            </Animated.View>   
+        }}
+        />
+        </View>
+    );
+} 
