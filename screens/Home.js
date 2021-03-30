@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { StyleSheet, View, Text, FlatList, SafeAreaView, TouchableHighlight, StatusBar} from 'react-native';
-import { Button, DataTable, Card } from 'react-native-paper';
+import { StyleSheet, View, Text, Image, FlatList, SafeAreaView, TouchableHighlight, StatusBar, Animated} from 'react-native';
+import { Button, IconButton, Card } from 'react-native-paper';
 import { Picker } from '@react-native-picker/picker';
 import moment from 'moment';
 import WeekSelector from 'react-native-week-selector';
@@ -10,6 +10,7 @@ import Dialog from "react-native-dialog";
 import { DatabaseConnection } from '../components/database-connection';
 import { TouchableOpacity } from 'react-native';
 import { colors } from 'react-native-elements';
+
 
 const db = DatabaseConnection.getConnection();
 
@@ -42,6 +43,14 @@ export default function Home ({ navigation }) {
       <Text>pop</Text>
         )
       }*/
+
+      const BG_IMG = 'https://www.solidbackgrounds.com/images/1280x720/1280x720-dark-midnight-blue-solid-color-background.jpg';
+
+      const SPACING = 20;
+      const AVATAR_SIZE = 70;
+      const ITEM_SIZE = AVATAR_SIZE + SPACING *3;
+      const scrollY = React.useRef(new Animated.Value(0)).current;         
+
 
       const colors = {
         themeColor: "#4263ec",
@@ -312,27 +321,38 @@ export default function Home ({ navigation }) {
    
    
       return (
-        <SafeAreaView style={{ flex: 1}}>
-          <View style={{backgroundColor: colors.white,
-         alignItems: 'center',
-           justifyContent: 'center',
-           flex: 1,
-           paddingBottom: 150}}>
-             <StatusBar barStyle="light-content" backgroundColor={colors.themeColor} />
-          <View style={{marginLeft: -200, marginBottom: 615, backgroundColor: '#FFF0E0', height: 50, borderColor: 'black', borderWidth: 3, borderRadius: 4 }}>
-          
-          <WeekSelector
+          <View style={{backgroundColor: colors.white,flex: 1}}>
+             <Image 
+        source={{uri: BG_IMG}}
+        style={StyleSheet.absoluteFillObject}
+        blurRadius={80}
+        />
+
+<IconButton icon="plus" size={45} style={{marginRight: 210, marginTop: 10, position: 'absolute', backgroundColor: '#e6c877', borderWidth: 3, borderColor: 'white',}} onPress={pressHandler} />
+
+<IconButton icon="magnify" size={45} style={{marginLeft: 320, marginTop: 10, position: 'absolute', backgroundColor: '#e6c877', borderWidth: 3, borderColor: 'white'}} onPress={SearchEntry} />
+
+          <View style={{
+            marginTop: 90,
+            height: 100,
+            width:370,
+            marginLeft: 10,
+            borderWidth: 3,
+            borderColor: 'white',
+            backgroundColor: '#FFF0E0',
+            borderRadius: 20,
+          }}>
+            <WeekSelector
             whitelistRange={[new Date(2018, 7, 13), new Date()]}
             weekStartsOn={6}
             onWeekChanged={saveWEEK}
           />
-            </View>
+          </View>
 
             
-          <View style={{borderWidth: 3,  borderColor: 'black', borderRadius: 4, marginRight: -200, marginBottom: 170, marginTop: -665}}>
-            <Picker style={{width: 150, height: 44, backgroundColor: '#FFF0E0', borderColor: 'black', borderWidth: 1, }}
+            <Picker style={{width: 150, height: 44, backgroundColor: '#FFF0E0', borderColor: 'white', marginTop: -75, marginLeft: 220 }}
                     selectedValue={dayoftheWeek}
-                    itemStyle={styles.onePickerItems}
+                    itemStyle={{fontWeight: 'bold'}}
                     onValueChange=
                     {
                         saveDayofWeek
@@ -347,73 +367,72 @@ export default function Home ({ navigation }) {
                             <Picker.Item label={'Sunday' + ' ' +  moment(Week).day("Sunday").format('MMM Do')} value="sunday" />
                            
                             </Picker>
-          </View>
-
-          <View style={{flex: 0, marginTop: -100, alignContent: 'center', marginLeft: 100, width: 500, marginBottom: -100,}}>
-            <Card style={{paddingRight: 150, borderRadius: 5, marginLeft: 30}}>
-              <Text style={{backgroundColor: "#42f599", paddingRight: 60, paddingHorizontal: 20, borderRadius: 10, height: 35, fontSize: 20, fontWeight: 'bold', width: 265}}>Day Total Hours:  {totalHrsforday}</Text>
-            </Card>
-            <FlatList
-            data={flatListItems}
-            style={{width:"90%", marginLeft: 10, marginTop: 30}}
-            ListHeaderComponent={tableHeader}
-            stickyHeaderIndices={[0]}
-            nestedScrollEnabled
-            keyExtractor={(item, index) => index+""}
-            renderItem={({ item, index }) => {
-              return (
-                <View style={{...styles.tableRow, backgroundColor: index % 2 == 1 ? "#F0FBFC" : "white"}}>
-              <TouchableHighlight onPress={showDialog}>
-                <Text style={{...styles.columnRowTxt, fontWeight:"bold", width: 80}}>{item.projNum}</Text>
-              
-              </TouchableHighlight>
-              <Text style={styles.columnRowTxt}>{item.siteID}</Text>
-              <Text style={styles.columnRowTxt}>{item.arrival}/{item.depart}</Text>
-              <Text style={styles.columnRowTxt}>{item.totalHrs}</Text>
-              <Dialog.Container visible={visible}>
-              <Dialog.Title>
-                <Text>{item.projNum } {" "} {item.siteID}</Text>
-                </Dialog.Title>
-              <Dialog.Description>
-                Day : {item.dayoftheweek} 
-              </Dialog.Description>
-              <Dialog.Description>
-                Project Number : {item.projNum}
-                </Dialog.Description>
-              <Dialog.Description>
-                Site ID : {item.siteID}
-                </Dialog.Description>
-              <Dialog.Description>
-                Start Hours : {item.arrival}
-                {" "} End Hours : {item.depart}
-                </Dialog.Description>
-              <Dialog.Description>
-                Total Hrs : {item.totalHrs} {" "} {totalHrsforday}
-                </Dialog.Description>
-              <Dialog.Description>
-                Description: {item.comment}
-              </Dialog.Description>
-              <Dialog.Button label="Edit" onPress={handleCancel} />
-              <Dialog.Button label="Delete" onPress={handleDelete} />
-            </Dialog.Container>
-            </View>
-              )
-            }} 
-          />
-         
-          </View>
-            <View style={{marginTop: 150}}>
-             <Button icon="plus" onPress={pressHandler}>
-                Add Entry
-           </Button>
-           <Button icon="magnify" onPress={SearchEntry}>
-                Search
-           </Button>
-           </View>
-            <StatusBar style="auto" />
-           </View>
+           
+              <Text style={{backgroundColor: "#42f599", borderColor: 'black', paddingHorizontal: 25, paddingTop: 5, borderRadius: 10, height: 40, fontSize: 20, fontWeight: 'bold', width: 275, marginTop: 15, marginLeft: 60, borderWidth: 3}}>Day Total Hours: {totalHrsforday}</Text>
             
-        </SafeAreaView>
+              <Animated.FlatList 
+        data={flatListItems}
+        onScroll={
+            Animated.event(
+                [{nativeEvent: {contentOffset: {y: scrollY}}}],
+                [{ useNativeDriver: true}]
+            )
+        }
+        keyExtractor={item => item.key}
+        contentContainerStyle={{
+            padding: SPACING,
+            paddingTop: StatusBar.currentHeight
+        }}
+        renderItem={({item, index}) => {
+            const inputRange = [
+                -1,
+                0,
+                ITEM_SIZE * index,
+                ITEM_SIZE * (index + 2)
+            ]
+            const opacityInputRange = [
+                -1,
+                0,
+                ITEM_SIZE * index,
+                ITEM_SIZE * (index + 1)
+            ]
+
+            const scale = scrollY.interpolate({
+                inputRange,
+                outputRange: [1, 1, 1, 0]
+            })
+
+            const opacity = scrollY.interpolate({
+                inputRange: opacityInputRange,
+                outputRange: [1, 1, 1, 0]
+            })
+
+
+            return <Animated.View style={{flexDirection: 'row', padding: SPACING, marginBottom: SPACING, backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 12,
+                shadowColor: '#000',
+                shadowOffset: {
+                    width: 0,
+                    height: 10
+                },
+                shadowOpacity: 0.3,
+                shadowRadius: 20,
+                opacity,
+                transform: [{scale}]
+            }}>
+                <Image 
+                    source={{uri: 'https://cdn5.f-cdn.com/contestentries/1503819/34508403/5ce0587fe3d17_thumb900.jpg'}}
+                    style={{width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: AVATAR_SIZE}}
+                />
+                <View>
+                    <Text style={{fontWeight: '700', fontSize: 22, color: '#000000'}}>  {item.arrival} - {item.depart}     [{item.totalHrs}]</Text>
+                    <Text style={{opacity: .7, fontSize: 28}}>  {item.projNum}</Text>
+                    <Text style={{opacity: .8, fontSize: 14, color: '#000000'}}>    {item.siteID}</Text> 
+                </View>
+            </Animated.View>   
+        }}
+        />
+      </View>
+            
    );
    }
     /*
@@ -518,7 +537,6 @@ export default function Home ({ navigation }) {
             onePickerItems: {
               height: 44,
               color: 'blue',
-              fontWeight: 'bold'
             },
             tableHeader: {
               flexDirection: "row",

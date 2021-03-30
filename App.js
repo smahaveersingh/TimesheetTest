@@ -52,7 +52,7 @@ Hour:
       screen: ListView,
       navigationOptions:({ navigation }) => {
         return {
-          headerTitle: () => <Header navigation={navigation} title='Enter hours' />,
+          headerTitle: () => <Header navigation={navigation} title='Timesheet Review' />,
           headerLeft: () => null
               }
             }

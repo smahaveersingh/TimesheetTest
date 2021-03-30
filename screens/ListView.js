@@ -10,7 +10,7 @@ import { CircularCard } from "react-native-circular-card-view";
 
 const db = DatabaseConnection.getConnection();
 
-const BG_IMG = 'https://i2.wp.com/9to5mac.com/wp-content/uploads/sites/6/2019/08/LightBlue-iOS-13-Home-app-wallpaper.png?quality=82&strip=all&ssl=1';
+const BG_IMG = 'https://www.solidbackgrounds.com/images/1280x720/1280x720-dark-midnight-blue-solid-color-background.jpg';
 
 const SPACING = 20;
 const AVATAR_SIZE = 70;
@@ -67,22 +67,30 @@ export default function ListView({ navigation }) {
         <Image 
         source={{uri: BG_IMG}}
         style={StyleSheet.absoluteFillObject}
-        blurRadius={80}
+        blurRadius={100}
         />
+        <IconButton icon="magnify" size={45} style={{marginLeft: 320, marginTop: 50, position: 'absolute', backgroundColor: '#e6c877',  backgroundColor: '#e6c877', borderWidth: 3, borderColor: 'white'}} onPress={SearchEntry} />
         <View style={{
+            marginTop: 10,
             height: 100,
-            width:370,
-            marginLeft: 20
+            width:300,
+            marginLeft: 10,
+            borderWidth: 3,
+            borderColor: 'white',
+            backgroundColor: '#FFF0E0',
+            borderRadius: 20,
+            elevation: 10,
+            shadowColor: '#fff',
+            shadowOffset: { width: 0, height: 3 },
+            shadowOpacity: 0.5,
+            shadowRadius: 5, 
         }}>
-            
-
-            <Text style={{fontWeight: '700', fontSize: 25, marginBottom: 12, color: 'black'}}>  Week Ending: {moment(selectedWeek).format('MMM Do')}</Text>
+            <Text style={{fontWeight: '700', fontSize: 20, marginBottom: 12, color: 'black'}}>  Week Ending: {moment(selectedWeek).format('MMM Do')}</Text>
         <WeekSelector
             whitelistRange={[new Date(2021, 1, 9), new Date()]}
             weekStartsOn={6}
             onWeekChanged={saveStartingWeek}
           />
-          <IconButton icon="magnify" size={45} style={{marginLeft: 290, marginBottom: 0, position: 'absolute', backgroundColor: '#d65187'}} onPress={SearchEntry} />
           </View>
         <Animated.FlatList 
         data={flatListItems}
@@ -138,9 +146,9 @@ export default function ListView({ navigation }) {
                     style={{width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: AVATAR_SIZE}}
                 />
                 <View>
-                    <Text style={{fontWeight: '700', fontSize: 22}}>  {item.arrival} - {item.depart}     [{item.totalHrs}]</Text>
+                    <Text style={{fontWeight: '700', fontSize: 22, color: 'black'}}>  {item.arrival} - {item.depart}     [{item.totalHrs}]</Text>
                     <Text style={{opacity: .7, fontSize: 28}}>  {item.projNum}</Text>
-                    <Text style={{opacity: .8, fontSize: 14, color: '#0099cc'}}>    {item.siteID}</Text> 
+                    <Text style={{opacity: .8, fontSize: 14, color: '#000000'}}>    {item.siteID}</Text> 
                 </View>
             </Animated.View>   
         }}
