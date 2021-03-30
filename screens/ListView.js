@@ -1,19 +1,17 @@
 import * as React from 'react';
 import { StatusBar, FlatList, Image, Animated, Text, View, Dimensions, StyleSheet, TouchableOpacity, Easing, SafeAreaViewBase, SafeAreaView } from 'react-native';
 const { width, height } = Dimensions.get('screen');
-import faker from 'faker';
 import WeekSelector from 'react-native-week-selector';
 import { DatabaseConnection } from '../components/database-connection';
 import moment from 'moment';
 import { IconButton } from 'react-native-paper';
-import { CircularCard } from "react-native-circular-card-view";
 
 const db = DatabaseConnection.getConnection();
 
 const BG_IMG = 'https://www.solidbackgrounds.com/images/1280x720/1280x720-dark-midnight-blue-solid-color-background.jpg';
 
 const SPACING = 20;
-const AVATAR_SIZE = 70;
+const AVATAR_SIZE = 50;
 const ITEM_SIZE = AVATAR_SIZE + SPACING *3;
 
 export default function ListView({ navigation }) {
