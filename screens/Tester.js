@@ -14,7 +14,7 @@ const SPACING = 20;
 const AVATAR_SIZE = 50;
 const ITEM_SIZE = AVATAR_SIZE + SPACING *3;
 
-export default function ListView({ navigation }) {
+export default function Test ({ navigation }) {
     const [flatListItems, setFlatListItems] = React.useState([]);
     const [selectedWeek, setselectedWeek] = React.useState();
 
@@ -146,7 +146,7 @@ export default function ListView({ navigation }) {
                 <View>
                     <Text style={{fontWeight: '700', fontSize: 22, color: 'black'}}>  {item.arrival} - {item.depart}     [{item.totalHrs}]</Text>
                     <Text style={{fontWeight: 'bold', opacity: .7, fontSize: 15}}>   {item.projNum}  {item.siteID}</Text>
-                    <Text style={{fontWeight: 'bold', opacity: .8, fontSize: 14, color: '#000000'}}>   {moment(item.date).format('MMM Do')}</Text> 
+                    <Text style={{fontWeight: 'bold', opacity: .8, fontSize: 14, color: '#000000'}}>   {moment(item.date).format('dddd, MMMM Do')}</Text> 
                 </View>
             </Animated.View>   
         }}

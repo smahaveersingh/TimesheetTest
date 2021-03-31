@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, View, Text, Image, FlatList, SafeAreaView, TouchableHighlight, StatusBar, Animated} from 'react-native';
+import { StyleSheet, View, Text, Image, StatusBar, Animated} from 'react-native';
 import { Button, IconButton, Card } from 'react-native-paper';
 import { Picker } from '@react-native-picker/picker';
 import moment from 'moment';
@@ -37,17 +37,17 @@ export default function Home ({ navigation }) {
   const [ direction, setDirection ] = React.useState(null);
   const [ selectedColumn, setSelectedColumn ] = React.useState(null);
   const [totalHrsforday, settotalHrsforday] = React.useState([]);
-
+  var timeList = [];
   /*_onPressButton  = () => {
     alert(
       <Text>pop</Text>
         )
       }*/
 
-      const BG_IMG = 'https://www.solidbackgrounds.com/images/1280x720/1280x720-dark-midnight-blue-solid-color-background.jpg';
+      const BG_IMG = 'https://upload.wikimedia.org/wikipedia/commons/b/b2/A_black_background.jpg';
 
       const SPACING = 20;
-      const AVATAR_SIZE = 70;
+      const AVATAR_SIZE = 30;
       const ITEM_SIZE = AVATAR_SIZE + SPACING *3;
       const scrollY = React.useRef(new Animated.Value(0)).current;         
 
@@ -189,10 +189,9 @@ export default function Home ({ navigation }) {
     
       // make sure what ever we return is a 2 digit float
       time = parseFloat(time).toFixed(decimal_places);
-    
+      console.log('time' + time);
       return time;  
     }
-
    
     
     let SearchEntry = () => {
@@ -211,9 +210,9 @@ export default function Home ({ navigation }) {
          console.log('len', len);
          if(len >= 0 ) {
           
-           for (let i = 0; i < results.rows.length; ++i) 
-          
-           temp.push(results.rows.item(i));
+           for (let i = 0; i < results.rows.length; ++i) {
+             temp.push(results.rows.item(i));
+           }
            setFlatListItems(temp);
  console.log(temp)
          } else {
@@ -228,37 +227,43 @@ export default function Home ({ navigation }) {
           'SELECT totalHrs FROM Timesheet WHERE date = ?',
           [currentDate],
           (tx, results) => {
-          //var temp = [];
           //for (let i = 0; i < results.rows.length; ++i)
           //temp.push(results.rows.item(i));
           //setFlatListItems(temp);
           var temp = [];
-          let sum = 0.0 ;
+          let sum = 0 ;
           var tot = [];
+
           var len = results.rows.length;
 
           console.log('len', len);
           if(len >= 0 ) {
 
           for (let i = 0; i < results.rows.length; ++i) 
-
+      
           temp.push(results.rows.item(i));
-          temp.forEach((item) => {
+          // console.log("temp" + temp)
+          // const any = ['07:20', '07:52', '05:03', '01:01', '09:02', '06:00'];
+          // const summmm = any.reduce((acc, time) => acc.add(moment.duration(time), moment.duration()));
+          // console.log('summ:  ' + [Math.floor(summmm.asHours()), summmm.minutes()].join(':'));
+
+           temp.forEach((item) => {
             
-            tot.push(filterTimeFormat(item.totalHrs));
-           
-            //sum = sum + parseFloat(item.totalHrs);
-            
-            
-            //moment(item.totalHrs, "HH:mm")
-          })
-          tot.forEach(function (i){
-            sum = sum + parseFloat(i);
-          })
-          settotalHrsforday(sum);
-          console.log('sum: ' + sum + ' TOT: ' + tot);
-          totalHrsforday
-          } else {
+             tot.push(filterTimeFormat(item.totalHrs));
+             
+             
+          //   //moment(item.totalHrs, "HH:mm")
+           })
+           tot.forEach(function (i){
+             sum = sum + parseFloat(i);
+           }) 
+          
+          var n = new Date(0,0);
+          n.setSeconds(+sum * 60 * 60);
+          settotalHrsforday(n.toTimeString().slice(0,5));
+          console.log('sum: ' + sum + ' TOT: ' + tot + 'time: ' + n.toTimeString().slice(0,5));
+          } 
+          else {
           alert('Cannot Search Entry!');
           }
         }
@@ -267,55 +272,90 @@ export default function Home ({ navigation }) {
           });
 };
 
+const addTimes = (startTime, endTime) => {
+  var times = [ 0, 0 ]
+  var max = times.length
+
+  var a = (startTime || '').split(':')
+  var b = (endTime || '').split(':')
+
+  // normalize time values
+  for (var i = 0; i < max; i++) {
+    a[i] = isNaN(parseInt(a[i])) ? 0 : parseInt(a[i])
+    b[i] = isNaN(parseInt(b[i])) ? 0 : parseInt(b[i])
+  }
+
+  // store time values
+  for (var i = 0; i < max; i++) {
+    times[i] = b[i] - a[i]
+  }
+
+  var hours = times[0]
+  var minutes = times[1]
 
 
-    const formatTime = (item) => {
-      var SHours = moment(item.arrivalHours, 'HH');
-      var SMinutes = moment(item.arrivalMinutes, 'mm');
+  if (minutes >= 60) {
+    var h = (minutes / 60) << 0
+    hours += h
+    minutes -= 60 * h
+  }
 
-      setHours(SHours.format('HH'));
-      setMinutes(SMinutes.format('mm'));
+  var addd = ('0' + hours).slice(-2) + ':' + ('0' + minutes).slice(-2);
+  console.log(addd);
 
-      var FHours = moment(item.departHours, 'HH');
-      var FMinutes = moment(item.departMinutes, 'mm');
+  return ('0' + hours).slice(-2) + ':' + ('0' + minutes).slice(-2)
+}
 
-      setFINHours(FHours.format('HH'));
-      setFINMinutes(FMinutes.format('mm'));
-    }
 
-    const sortTable  = (column) => {
-      const newDirection = direction === "desc" ? "asc" : "desc" 
-      const sortedData = _.orderBy(flatListItems, [column],[newDirection]);
-      setSelectedColumn(column);
-      setDirection(newDirection);
-      setFlatListItems(sortedData);
-    }
 
-    const tableHeader = () => (
-      <View style={styles.tableHeader}>
-        {
-          columns.map((column, index) => {
-            {
-              return (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.columnHeader}
-                  onPress={() => sortTable(column)}>
-                  <Text style={styles.columnHeaderTxt}>
-                    {column + " "}
-                    { selectedColumn === column && <MaterialCommunityIcons 
-                      name={direction === "desc" ? "arrow-down-drop-circle" : "arrow-up-drop-circle"} 
-                    />
-                    }
-                  </Text>
 
-                </TouchableOpacity>
-              )
-            }
-          })
-        }
-      </View>
-    )
+    // const formatTime = (item) => {
+    //   var SHours = moment(item.arrivalHours, 'HH');
+    //   var SMinutes = moment(item.arrivalMinutes, 'mm');
+
+    //   setHours(SHours.format('HH'));
+    //   setMinutes(SMinutes.format('mm'));
+
+    //   var FHours = moment(item.departHours, 'HH');
+    //   var FMinutes = moment(item.departMinutes, 'mm');
+
+    //   setFINHours(FHours.format('HH'));
+    //   setFINMinutes(FMinutes.format('mm'));
+    // }
+
+    // const sortTable  = (column) => {
+    //   const newDirection = direction === "desc" ? "asc" : "desc" 
+    //   const sortedData = _.orderBy(flatListItems, [column],[newDirection]);
+    //   setSelectedColumn(column);
+    //   setDirection(newDirection);
+    //   setFlatListItems(sortedData);
+    // }
+
+    // const tableHeader = () => (
+    //   <View style={styles.tableHeader}>
+    //     {
+    //       columns.map((column, index) => {
+    //         {
+    //           return (
+    //             <TouchableOpacity
+    //               key={index}
+    //               style={styles.columnHeader}
+    //               onPress={() => sortTable(column)}>
+    //               <Text style={styles.columnHeaderTxt}>
+    //                 {column + " "}
+    //                 { selectedColumn === column && <MaterialCommunityIcons 
+    //                   name={direction === "desc" ? "arrow-down-drop-circle" : "arrow-up-drop-circle"} 
+    //                 />
+    //                 }
+    //               </Text>
+
+    //             </TouchableOpacity>
+    //           )
+    //         }
+    //       })
+    //     }
+    //   </View>
+    // )
   
   
    
@@ -368,7 +408,7 @@ export default function Home ({ navigation }) {
                            
                             </Picker>
            
-              <Text style={{backgroundColor: "#42f599", borderColor: 'black', paddingHorizontal: 25, paddingTop: 5, borderRadius: 10, height: 40, fontSize: 20, fontWeight: 'bold', width: 275, marginTop: 15, marginLeft: 60, borderWidth: 3}}>Day Total Hours: {totalHrsforday}</Text>
+              <Text style={{backgroundColor: "#42f599", borderColor: 'black', paddingHorizontal: 25, paddingTop: 5, borderRadius: 10, height: 40, fontSize: 20, fontWeight: 'bold', width: 300, marginTop: 15, marginLeft: 60, borderWidth: 3}}>Day Total Hours: {totalHrsforday}</Text>
             
               <Animated.FlatList 
         data={flatListItems}
@@ -419,14 +459,11 @@ export default function Home ({ navigation }) {
                 opacity,
                 transform: [{scale}]
             }}>
-                <Image 
-                    source={{uri: 'https://cdn5.f-cdn.com/contestentries/1503819/34508403/5ce0587fe3d17_thumb900.jpg'}}
-                    style={{width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: AVATAR_SIZE}}
-                />
+                
                 <View>
-                    <Text style={{fontWeight: '700', fontSize: 22, color: '#000000'}}>  {item.arrival} - {item.depart}     [{item.totalHrs}]</Text>
-                    <Text style={{opacity: .7, fontSize: 28}}>  {item.projNum}</Text>
-                    <Text style={{opacity: .8, fontSize: 14, color: '#000000'}}>    {item.siteID}</Text> 
+                    <Text style={{fontWeight: '700', fontSize: 22, color: '#000000'}}>{item.arrival} - {item.depart}                [{item.totalHrs}]</Text>
+                    <Text style={{fontWeight: 'bold',opacity: .7, fontSize: 15}}>VOD75860 DN823 Robinson Transport -  Bolts removed from fenc - DN823 Robinsons Transport</Text>
+                    <Text style={{fontWeight: 'bold',opacity: .8, fontSize: 14, color: '#000000'}}>{moment(item.date).format('dddd, MMMM Do')}  </Text> 
                 </View>
             </Animated.View>   
         }}

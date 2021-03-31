@@ -133,15 +133,66 @@ const db = DatabaseConnection.getConnection();
   );*/
   }, []);
 
-  /*var momentObj = moment(currentDate + Hours + Minutes, 'YYYY-MM-DDLT');
-  var dateTime = momentObj.format('YYYY-MM-DDTHH:mm:s');
-  console.log(dateTime);*/
+  const testClash = (d1, d2) => {     //calculating the weight of the conflict.
+    	// d1 and d2 in array format
+  // [moment from, moment to]
+  var count = 0;
+  for (var i = 0, t; t = d1[i]; i++) {
+    // use isBetween exclusion
+    if (t.isBetween(d2[0], d2[1], null, '()')) {
+      count++;
+    }
+  }
 
+  for (var i = 0, t; t = d2[i]; i++) {
+    // use isBetween exclusion
+    if (t.isBetween(d1[0], d1[1], null, '()')) {
+      count++;
+    }
+  }
+
+  if (count > 1) {
+    return console.log('completely conflict');
+  }
+
+  if (count > 0) {
+    return console.log('partial conflict');
+  }
+
+  return console.log('something else');
+  }
+
+  var t1 = [moment(frTimes).format('HH:mm'), moment(frTimes).format('HH:mm')]
+
+  const time_clash = () => {
+    db.transaction(function (tx) {
+      tx.executeSql(
+        'SELECT arrival, depart FROM Timesheet WHERE date=?',
+        [currentDate],
+        (tx, results) => {
+          var temp = [];
+         var len = results.rows.length;
+
+         console.log('len', len);
+         if(len >= 0 ) {
+          
+           for (let i = 0; i < results.rows.length; ++i) 
+          
+           temp.push(results.rows.item(i));
+           console.log(temp);
+ console.log(temp)
+         } else {
+           alert('Cannot Search Entry!');
+         }
+        }
+      );
+    });
+  }
   
 
   const add_entry = () => {
     //calcTotalHrs();
-
+    
     console.log( selectedWeek, currentDate, projNum, description, frTimes, frFinTimes, Thrs, siteID, dayoftheWeek);
 
     db.transaction(function (tx) {
@@ -304,8 +355,6 @@ const db = DatabaseConnection.getConnection();
   //     return len>0?(+splitTime(timeList[len - 1].e))
   //   }
   // }
-
-  var range = moment
 
    const calcTotalHrs = () => {
     //setfinishVisible(true)
