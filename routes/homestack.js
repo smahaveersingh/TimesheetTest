@@ -4,6 +4,7 @@ import { createStackNavigator } from 'react-navigation-stack';
 import Login from '../screens/login';
 import Home from '../screens/Home';
 import Hour from '../screens/Hour';
+import EditSheet from '../screens/EditSheet';
 import ViewEntry from '../screens/ViewEntry';
 import ListView from '../screens/ListView';
 import Header from '../components/Header';
@@ -44,6 +45,16 @@ Hour:
     navigationOptions:({ navigation }) => {
     return {
       headerTitle: () => <Header navigation={navigation} title='Enter hours' />,
+      headerLeft: () => null
+          }
+    }
+},
+EditSheet:
+  {
+    screen: EditSheet,
+    navigationOptions:({ navigation }) => {
+    return {
+      headerTitle: () => <Header navigation={navigation} title='Edit' />,
       headerLeft: () => null
           }
     }

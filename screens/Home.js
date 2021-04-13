@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, View, Text, Image, StatusBar, Animated} from 'react-native';
+import { StyleSheet, View, Text, Image, StatusBar, Animated, TouchableOpacity, Alert} from 'react-native';
 import { Button, IconButton, Card } from 'react-native-paper';
 import { Picker } from '@react-native-picker/picker';
 import moment from 'moment';
@@ -8,9 +8,9 @@ import { MaterialCommunityIcons, AntDesign } from '@expo/vector-icons';
 import _ from "lodash";
 import Dialog from "react-native-dialog";
 import { DatabaseConnection } from '../components/database-connection';
-import { TouchableOpacity } from 'react-native';
 import { colors } from 'react-native-elements';
-
+import AwesomeAlert from 'react-native-awesome-alerts';
+import AsyncStorage from "@react-native-community/async-storage";
 
 const db = DatabaseConnection.getConnection();
 
@@ -24,10 +24,12 @@ export default function Home ({ navigation }) {
   const [FINHours, setFINHours] = React.useState('');
   const [FINMinutes, setFINMinutes] = React.useState('');
   const [dayoftheWeek, setDayoftheWeek] = React.useState('');
-  const [Week, setWeek] = React.useState();
+  const [Week, setWeek] = React.useState('');
   const [currentDate, setCurrentDate] = React.useState('');
   const [formatDay, setformatDay] = React.useState('');
   const [visible, setVisible] = React.useState(false);
+  const [showAlert, setshowAlert] = React.useState(false);
+  const [IDtimesheet, setIDtimesheet] = React.useState('');
   const [ columns, setColumns ] = React.useState([
     "Project",
     "Site",
@@ -44,7 +46,7 @@ export default function Home ({ navigation }) {
         )
       }*/
 
-      const BG_IMG = 'https://upload.wikimedia.org/wikipedia/commons/b/b2/A_black_background.jpg';
+      const BG_IMG = 'https://www.solidbackgrounds.com/images/950x350/950x350-snow-solid-color-background.jpg';
 
       const SPACING = 20;
       const AVATAR_SIZE = 30;
@@ -60,23 +62,26 @@ export default function Home ({ navigation }) {
         tint: "#2b49c3",
       }
 
-      const showDialog = () => {
-        setVisible(true);
+      const popAlert = () => 
+      {
+          setshowAlert (true);
+      }
+     
+      const hideAlert = () => 
+      {
+          setshowAlert (false);
       };
-    
-      const handleCancel = () => {
-        setVisible(false);
-      };
-  
-      const handleDelete = () => {
-        // The user has pressed the "Delete" button, so here you can do your own logic.
-        // ...Your logic
-        setVisible(false);
-      };
-  
+
+     
     const pressHandler = () => 
     {
+      save();
       navigation.navigate('Hour')
+    }
+
+    const deleteHandler = () => 
+    {
+      navigation.navigate('ViewEntry')
     }
 
     const saveDayofWeek = (itemValue, itemIndex) => {
@@ -114,8 +119,8 @@ export default function Home ({ navigation }) {
 
     const saveWEEK = (value) => {
       moment.locale('en');
-      console.log("saveStartingWeek - value:", moment(value).format('L'));
-        setWeek(moment(value).format('L'));
+      console.log("saveStartingWeek - value:", moment(value).add(5, "days").format('L'));
+        setWeek(moment(value).add(5, "days").format('L'));
     }
 
     /*React.useEffect(() => {
@@ -193,8 +198,39 @@ export default function Home ({ navigation }) {
       return time;  
     }
    
+
+    let Update = () => {
+      save();
+      db.transaction((tx) => {
+     tx.executeSql(
+      'SELECT * FROM Timesheet WHERE date = ?',
+      [currentDate],
+       (tx, results) => {
+         //var temp = [];
+         //for (let i = 0; i < results.rows.length; ++i)
+           //temp.push(results.rows.item(i));
+         //setFlatListItems(temp);
+         var temp = [];
+         var len = results.rows.length;
+
+         console.log('len', len);
+         if(len >= 0 ) {
+          
+           for (let i = 0; i < results.rows.length; ++i) {
+             temp.push(results.rows.item(i));
+           }
+           setFlatListItems(temp);
+ console.log(temp)
+         } else {
+           alert('Cannot Search Entry!');
+         }
+                       }
+                       );
+                      });
+            };
     
     let SearchEntry = () => {
+      save();
       db.transaction((tx) => {
      tx.executeSql(
       'SELECT * FROM Timesheet WHERE date = ?',
@@ -307,180 +343,236 @@ const addTimes = (startTime, endTime) => {
 }
 
 
-
-
-    // const formatTime = (item) => {
-    //   var SHours = moment(item.arrivalHours, 'HH');
-    //   var SMinutes = moment(item.arrivalMinutes, 'mm');
-
-    //   setHours(SHours.format('HH'));
-    //   setMinutes(SMinutes.format('mm'));
-
-    //   var FHours = moment(item.departHours, 'HH');
-    //   var FMinutes = moment(item.departMinutes, 'mm');
-
-    //   setFINHours(FHours.format('HH'));
-    //   setFINMinutes(FMinutes.format('mm'));
-    // }
-
-    // const sortTable  = (column) => {
-    //   const newDirection = direction === "desc" ? "asc" : "desc" 
-    //   const sortedData = _.orderBy(flatListItems, [column],[newDirection]);
-    //   setSelectedColumn(column);
-    //   setDirection(newDirection);
-    //   setFlatListItems(sortedData);
-    // }
-
-    // const tableHeader = () => (
-    //   <View style={styles.tableHeader}>
-    //     {
-    //       columns.map((column, index) => {
-    //         {
-    //           return (
-    //             <TouchableOpacity
-    //               key={index}
-    //               style={styles.columnHeader}
-    //               onPress={() => sortTable(column)}>
-    //               <Text style={styles.columnHeaderTxt}>
-    //                 {column + " "}
-    //                 { selectedColumn === column && <MaterialCommunityIcons 
-    //                   name={direction === "desc" ? "arrow-down-drop-circle" : "arrow-up-drop-circle"} 
-    //                 />
-    //                 }
-    //               </Text>
-
-    //             </TouchableOpacity>
-    //           )
-    //         }
-    //       })
-    //     }
-    //   </View>
-    // )
-  
-  
-   
-   
-      return (
-          <View style={{backgroundColor: colors.white,flex: 1}}>
-             <Image 
-        source={{uri: BG_IMG}}
-        style={StyleSheet.absoluteFillObject}
-        blurRadius={80}
-        />
-
-<IconButton icon="plus" size={45} style={{marginRight: 210, marginTop: 10, position: 'absolute', backgroundColor: '#e6c877', borderWidth: 3, borderColor: 'white',}} onPress={pressHandler} />
-
-<IconButton icon="magnify" size={45} style={{marginLeft: 320, marginTop: 10, position: 'absolute', backgroundColor: '#e6c877', borderWidth: 3, borderColor: 'white'}} onPress={SearchEntry} />
-
-          <View style={{
-            marginTop: 90,
-            height: 100,
-            width:370,
-            marginLeft: 10,
-            borderWidth: 3,
-            borderColor: 'white',
-            backgroundColor: '#FFF0E0',
-            borderRadius: 20,
-          }}>
-            <WeekSelector
-            whitelistRange={[new Date(2018, 7, 13), new Date()]}
-            weekStartsOn={6}
-            onWeekChanged={saveWEEK}
-          />
-          </View>
-
-            
-            <Picker style={{width: 150, height: 44, backgroundColor: '#FFF0E0', borderColor: 'white', marginTop: -75, marginLeft: 220 }}
-                    selectedValue={dayoftheWeek}
-                    itemStyle={{fontWeight: 'bold'}}
-                    onValueChange=
-                    {
-                        saveDayofWeek
-                    }>
-                      
-                            <Picker.Item label={'Monday' + ' ' +  moment(Week).day("Monday").format('MMM Do')} value="monday" />
-                            <Picker.Item label={'Tuesday' + ' ' +  moment(Week).day("Tuesday").format('MMM Do')} value="tuesday" />
-                            <Picker.Item label={'Wednesday' + ' ' +  moment(Week).day("Wednesday").format('MMM Do')} value="wednesday" />
-                            <Picker.Item label={'Thursday' + ' ' +  moment(Week).day("Thursday").format('MMM Do')} value="thursday" />
-                            <Picker.Item label={'Friday' + ' ' +  moment(Week).day("Friday").format('MMM Do')} value="friday" />
-                            <Picker.Item label={'Saturday' + ' ' +  moment(Week).day("Saturday").format('MMM Do')} value="saturday" />
-                            <Picker.Item label={'Sunday' + ' ' +  moment(Week).day("Sunday").format('MMM Do')} value="sunday" />
-                           
-                            </Picker>
-           
-              <Text style={{backgroundColor: "#42f599", borderColor: 'black', paddingHorizontal: 25, paddingTop: 5, borderRadius: 10, height: 40, fontSize: 20, fontWeight: 'bold', width: 300, marginTop: 15, marginLeft: 60, borderWidth: 3}}>Day Total Hours: {totalHrsforday}</Text>
-            
-              <Animated.FlatList 
-        data={flatListItems}
-        onScroll={
-            Animated.event(
-                [{nativeEvent: {contentOffset: {y: scrollY}}}],
-                [{ useNativeDriver: true}]
-            )
+let deleteEntry = () => {
+  db.transaction((tx) => {
+    console.log("Sample " + IDtimesheet); 
+    tx.executeSql(
+      'DELETE FROM Timesheet WHERE id_timesheet = ?',
+      [IDtimesheet],
+      (tx, results) => {
+        console.log('Results', results.rowsAffected);
+        if (results.rowsAffected > 0) {
+          Alert.alert(
+            'Sucess',
+            'Entry removed from Dataase',
+            [
+              {
+                text: 'Ok',
+                onPress: Update()
+              }
+            ],
+            { cancelable: false }
+          );
+        } else {
+          alert('Entry could not be deleted');
         }
-        keyExtractor={item => item.key}
-        contentContainerStyle={{
-            padding: SPACING,
-            paddingTop: StatusBar.currentHeight
-        }}
-        renderItem={({item, index}) => {
-            const inputRange = [
-                -1,
-                0,
-                ITEM_SIZE * index,
-                ITEM_SIZE * (index + 2)
-            ]
-            const opacityInputRange = [
-                -1,
-                0,
-                ITEM_SIZE * index,
-                ITEM_SIZE * (index + 1)
-            ]
+      }
+    );
+  });
+};
 
-            const scale = scrollY.interpolate({
-                inputRange,
-                outputRange: [1, 1, 1, 0]
-            })
+ const save = async () => {
+    try{
+      await AsyncStorage.setItem("MyWeekEnding", Week)
+      await AsyncStorage.setItem("MyWeek", currentDate)
+      await AsyncStorage.setItem("MyDays", dayoftheWeek)
+    }
+    catch (err)
+    {
+      alert(err)
+    }
+  };
 
-            const opacity = scrollY.interpolate({
-                inputRange: opacityInputRange,
-                outputRange: [1, 1, 1, 0]
-            })
+  const load = async () => {
+    try{
+     let Week = await AsyncStorage.getItem("MyWeekEnding")
+     let currentDate = await AsyncStorage.getItem("MyWeek")
+     let dayoftheWeek = await AsyncStorage.getItem("MyDays")
+
+     if(Week !== null)
+     {
+      setWeek(Week)
+     }
+     
+     if(currentDate !== null)
+     {
+      setCurrentDate(currentDate)
+     }
+
+     if(dayoftheWeek !== null)
+     {
+      setDayoftheWeek(dayoftheWeek)
+     }
+
+    }
+    catch (err){
+      alert(err)
+    }
+  };
+
+  React.useEffect(() => {
+    load();
+  },[])
 
 
-            return <Animated.View style={{flexDirection: 'row', padding: SPACING, marginBottom: SPACING, backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 12,
-                shadowColor: '#000',
-                shadowOffset: {
-                    width: 0,
-                    height: 10
-                },
-                shadowOpacity: 0.3,
-                shadowRadius: 20,
-                opacity,
-                transform: [{scale}]
-            }}>
-                
-                <View>
-                    <Text style={{fontWeight: '700', fontSize: 22, color: '#000000'}}>{item.arrival} - {item.depart}                [{item.totalHrs}]</Text>
-                    <Text style={{fontWeight: 'bold',opacity: .7, fontSize: 15}}>VOD75860 DN823 Robinson Transport -  Bolts removed from fenc - DN823 Robinsons Transport</Text>
-                    <Text style={{fontWeight: 'bold',opacity: .8, fontSize: 14, color: '#000000'}}>{moment(item.date).format('dddd, MMMM Do')}  </Text> 
-                </View>
-            </Animated.View>   
-        }}
-        />
+    
+   
+    return (
+      <View style={{backgroundColor: colors.white,flex: 1}}>
+         <Image 
+    source={{uri: BG_IMG}}
+    style={StyleSheet.absoluteFillObject}
+    blurRadius={80}
+    />
+<Text style={{marginLeft: 18, marginTop: 20, fontSize: 16, color: '#091629', fontWeight: 'bold'}}>Week Ending                     Day of the Week</Text>
+
+
+      <View style={{
+        marginTop:0,
+        height: 100,
+        width:380,
+        marginLeft: 8,
+        borderWidth: 3,
+        borderColor: 'white',
+        backgroundColor: '#e1ecf2',
+        borderRadius: 20,
+      }}>
+      
+        <WeekSelector
+        whitelistRange={[new Date(2018, 7, 13), new Date()]}
+        weekStartsOn={6}
+        onWeekChanged={saveWEEK}
+      />
+      <IconButton icon="magnify" size={25} style={{marginLeft: 330, marginTop: 25, position: 'absolute', backgroundColor: '#ffffff', borderWidth: 3, borderColor: 'white'}} onPress={SearchEntry} />
+
       </View>
+
+        
+        <Picker style={{width: 135, height: 44, backgroundColor: '#f2fbff', borderColor: 'white', marginTop: -73, marginLeft: 190 }}
+                selectedValue={dayoftheWeek}
+                itemStyle={{fontWeight: 'bold'}}
+                onValueChange=
+                {
+                    saveDayofWeek
+                }>
+                  
+                        <Picker.Item label={'Monday' + ' ' +  moment(Week).day("Monday").format('MMM Do')} value="monday" />
+                        <Picker.Item label={'Tuesday' + ' ' +  moment(Week).day("Tuesday").format('MMM Do')} value="tuesday" />
+                        <Picker.Item label={'Wednesday' + ' ' +  moment(Week).day("Wednesday").format('MMM Do')} value="wednesday" />
+                        <Picker.Item label={'Thursday' + ' ' +  moment(Week).day("Thursday").format('MMM Do')} value="thursday" />
+                        <Picker.Item label={'Friday' + ' ' +  moment(Week).day("Friday").format('MMM Do')} value="friday" />
+                        <Picker.Item label={'Saturday' + ' ' +  moment(Week).day("Saturday").format('MMM Do')} value="saturday" />
+                        <Picker.Item label={'Sunday' + ' ' +  moment(Week).day("Sunday").format('MMM Do')} value="sunday" />
+                       
+                        </Picker>
+       
+        {/* <View>
+        <Text style={{marginLeft: 148, marginTop: 100, fontSize: 16, color: '#a1a1a1', fontWeight: 'bold'}}>Add an Entry</Text>
+        <IconButton icon="plus" size={45} style={{marginLeft: 160,  backgroundColor: '#ffffff', color:'#091629', borderWidth: 3, borderColor: 'white',}} onPress={pressHandler} />
+        </View>  */}
+        
+        <Text style={{fontWeight: '700', fontSize: 20, color: '#091629', marginLeft: 20, marginTop: 30}}>{moment(currentDate).format('dddd, MMMM Do')}  </Text> 
+        <Text style={{backgroundColor: "#091629", borderColor: 'black', paddingHorizontal: 25, paddingTop: 5, borderRadius: 10, height: 40, fontSize: 20, fontWeight: 'bold', color: '#f2fbff' ,width: 300, marginTop: 5, marginLeft: 60, borderWidth: 3}}>Day Total Hours: {totalHrsforday}</Text>
+          <Animated.FlatList 
+    data={flatListItems}
+    onScroll={
+        Animated.event(
+            [{nativeEvent: {contentOffset: {y: scrollY}}}],
+            [{ useNativeDriver: true}]
+        )
+    }
+    keyExtractor={item => item.key}
+    contentContainerStyle={{
+        padding: SPACING,
+        paddingTop: StatusBar.currentHeight
+    }}
+    renderItem={({item, index}) => {
+      setIDtimesheet(item.id_timesheet)
+        const inputRange = [
+            -1,
+            0,
+            ITEM_SIZE * index,
+            ITEM_SIZE * (index + 2)
+        ]
+        const opacityInputRange = [
+            -1,
+            0,
+            ITEM_SIZE * index,
+            ITEM_SIZE * (index + 1)
+        ]
+
+        const scale = scrollY.interpolate({
+            inputRange,
+            outputRange: [1, 1, 1, 0]
+        })
+
+        const opacity = scrollY.interpolate({
+            inputRange: opacityInputRange,
+            outputRange: [1, 1, 1, 0]
+        })
+
+        return <Animated.View style={{flexDirection: 'row', padding: SPACING, marginBottom: SPACING, backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 12,
+            shadowColor: '#000',
+            shadowOffset: {
+                width: 0,
+                height: 10
+            },
+            shadowOpacity: 0.3,
+            shadowRadius: 20,
+            opacity,
+            transform: [{scale}]
+        }}>
+            <TouchableOpacity onPress={popAlert}>
+            <View>
+            <Text style={{fontWeight: '700', fontSize: 24, color: '#091629'}}>{item.projNum}  </Text> 
+                  <Text style={{opacity: .7, fontSize: 15}}>  {item.projNum} - {item.siteID}</Text>
+                <Text style={{fontWeight: '700', fontSize: 14, color: '#091629'}}>  {item.arrival} - {item.depart}     Duration : {item.totalHrs}</Text>
+           </View>
+            </TouchableOpacity>  
+            <AwesomeAlert
+          show={showAlert}
+          showProgress={false}
+          title= {item.comment}
+          message="I have a message for you!"
+          closeOnTouchOutside={true}
+          closeOnHardwareBackPress={false}
+          showCancelButton={true}
+          showConfirmButton={true}
+          confirmText="Delete"
+          cancelText="Edit"
+          confirmButtonColor="#DD6B55"
+          onCancelPressed={() => {
+            hideAlert()
+            navigation.navigate('EditSheet', item)
+          }}
+          onConfirmPressed={() => {
+            console.log("Timesheet ID: " + IDtimesheet)  
+            deleteEntry(IDtimesheet);  
+            hideAlert(); 
+          }}
+        />
+        </Animated.View>   
+        
+    }}
+    />
+    
+    <View>
+    <Button style icon="plus" onPress={pressHandler}>
+            Add
+       </Button>
+        </View>
+       
+  </View>
+        
+);
             
-   );
    }
     /*
     <View style={{marginLeft: -200, marginTop: -550}}>
               
-
           
             </View>
            
-
-
     */
    
    const styles = StyleSheet.create({
