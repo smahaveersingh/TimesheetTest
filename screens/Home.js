@@ -4,9 +4,6 @@ import { Button, IconButton, Card } from 'react-native-paper';
 import { Picker } from '@react-native-picker/picker';
 import moment from 'moment';
 import WeekSelector from 'react-native-week-selector';
-import { MaterialCommunityIcons, AntDesign } from '@expo/vector-icons';
-import _ from "lodash";
-import Dialog from "react-native-dialog";
 import { DatabaseConnection } from '../components/database-connection';
 import { colors } from 'react-native-elements';
 import AwesomeAlert from 'react-native-awesome-alerts';
@@ -18,33 +15,14 @@ const db = DatabaseConnection.getConnection();
 
 export default function Home ({ navigation }) {
 
-  const [flatListItems, setFlatListItems] = React.useState([]);
-  const [Hours, setHours] = React.useState('');
-  const [Minutes, setMinutes] = React.useState('');
-  const [FINHours, setFINHours] = React.useState('');
-  const [FINMinutes, setFINMinutes] = React.useState('');
-  const [dayoftheWeek, setDayoftheWeek] = React.useState('');
-  const [Week, setWeek] = React.useState('');
-  const [currentDate, setCurrentDate] = React.useState('');
-  const [formatDay, setformatDay] = React.useState('');
-  const [visible, setVisible] = React.useState(false);
-  const [showAlert, setshowAlert] = React.useState(false);
-  const [IDtimesheet, setIDtimesheet] = React.useState('');
-  const [ columns, setColumns ] = React.useState([
-    "Project",
-    "Site",
-    "Start/End",
-    "Total"
-  ])
-  const [ direction, setDirection ] = React.useState(null);
-  const [ selectedColumn, setSelectedColumn ] = React.useState(null);
-  const [totalHrsforday, settotalHrsforday] = React.useState([]);
-  var timeList = [];
-  /*_onPressButton  = () => {
-    alert(
-      <Text>pop</Text>
-        )
-      }*/
+  const [flatListItems, setFlatListItems] = React.useState([]); // variable for FlatList Items
+  const [dayoftheWeek, setDayoftheWeek] = React.useState('');   // variable for Day of Week
+  const [Week, setWeek] = React.useState(moment().day(5).format("L"));                   // variable for End of Week
+  const [currentDate, setCurrentDate] = React.useState(moment().format("L"));     // variable for date
+  const [formatDay, setformatDay] = React.useState('');         // variable for formatting date
+  const [showAlert, setshowAlert] = React.useState(false);      // Flag variable for Modal popup (Edit/Delete)
+  const [IDtimesheet, setIDtimesheet] = React.useState('');     // variable for id_timesheeet
+  const [totalHrsforday, settotalHrsforday] = React.useState([]); // variable for Total Hours
 
       const BG_IMG = 'https://www.solidbackgrounds.com/images/950x350/950x350-snow-solid-color-background.jpg';
 
@@ -62,83 +40,65 @@ export default function Home ({ navigation }) {
         tint: "#2b49c3",
       }
 
-      const popAlert = () => 
+      const popAlert = () => // Flag Function to display Alert
       {
           setshowAlert (true);
       }
      
-      const hideAlert = () => 
+      const hideAlert = () => // Flag Function to hide Alert
       {
           setshowAlert (false);
       };
 
      
-    const pressHandler = () => 
+    const pressHandler = () => // Function to navigate to Hours (Add Entry) Screen
     {
       save();
       navigation.navigate('Hour')
     }
 
-    const deleteHandler = () => 
+    const deleteHandler = () => // Function to navigate to ViewEntry Screen
     {
       navigation.navigate('ViewEntry')
     }
 
-    const saveDayofWeek = (itemValue, itemIndex) => {
+    const saveDayofWeek = (itemValue, itemIndex) => {  // function to save Day of the Week
       setDayoftheWeek(itemValue);
-  
       var next = getNextDay(itemValue);
-      //console.log(next.getTime());
       console.log(moment(next.getTime()).format('L'));
       setCurrentDate(moment(next.getTime()).format('L'));
       setformatDay(moment(next.getTime()).format('MMM Do'));
     }
   
-    const getNextDay = (dayName) => {
+    const getNextDay = (dayName) => {  // function used to get desired day, it is used as a helper for saving Day of the Week
       var todayDate = new Date(Week);
       var now = todayDate.getDay();
   
       // Days of the week
-    var daysoftheweek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  
-    // The index for the day you want
-    var Indexofday = daysoftheweek.indexOf(dayName.toLowerCase());
-  
-    // Find the difference between the current day and the one you want
-    // If it's the same day as today (or a negative number), jump to the next week
-    var diff = Indexofday - now;
-    diff = diff < 1 ? diff : diff;
-  
-    // Get the timestamp for the desired day
-    var nextDayTimestamp = todayDate.getTime() + (1000 * 60 * 60 * 24 * diff);
-  
-    // Get the next day
-    return new Date(nextDayTimestamp);
-  
+      var daysoftheweek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    
+      // The index for the day you want
+      var Indexofday = daysoftheweek.indexOf(dayName.toLowerCase());
+    
+      // Find the difference between the current day and the one you want
+      // If it's the same day as today (or a negative number), jump to the next week
+      var diff = Indexofday - now;
+      diff = diff < 1 ? diff : diff;
+    
+      // Get the timestamp for the desired day
+      var nextDayTimestamp = todayDate.getTime() + (1000 * 60 * 60 * 24 * diff);
+    
+      // Get the next day
+      return new Date(nextDayTimestamp);
     }
 
-    const saveWEEK = (value) => {
+    const saveWEEK = (value) => { // Function to save End of Week
       moment.locale('en');
       console.log("saveStartingWeek - value:", moment(value).add(5, "days").format('L'));
         setWeek(moment(value).add(5, "days").format('L'));
     }
 
-    /*React.useEffect(() => {
-      db.transaction((tx) => {
-        tx.executeSql(
-          'SELECT * FROM Timesheet',
-          [],
-          (tx, results) => {
-            var temp = [];
-            for (let i = 0; i < results.rows.length; ++i)
-              temp.push(results.rows.item(i));
-            setFlatListItems(temp);
-          }
-        );
-      });
-    }, []);*/
-
-    const filterTimeFormat = (time) => {
+    const filterTimeFormat = (time) => { // Function to filter and split Time variables into Hours & Minutes
       var decimal_places = 2;
 
       // Maximum number of hours before we should assume minutes were intended. Set to 0 to remove the maximum.
@@ -155,12 +115,6 @@ export default function Home ({ navigation }) {
     
       // 2h
       var hour_string_format = time.toLowerCase().match(/([\d]+)h/);
-    
-      // if (minutes >= 60) {
-      //     minutes = minutes - 60;
-      //     hours = hours + 1;
-      //     console.log('min: ' + minutes)
-      //   }
         
       if (time_format != null) {
         var hours = parseInt(time_format[1]);
@@ -199,17 +153,13 @@ export default function Home ({ navigation }) {
     }
    
 
-    let Update = () => {
-      save();
-      db.transaction((tx) => {
+    let Update = () => {  // Function used to get recent updated entries from the Database
+      save(); // using AsyncStorage Function to save Selected Values
+     db.transaction((tx) => {
      tx.executeSql(
       'SELECT * FROM Timesheet WHERE date = ?',
       [currentDate],
        (tx, results) => {
-         //var temp = [];
-         //for (let i = 0; i < results.rows.length; ++i)
-           //temp.push(results.rows.item(i));
-         //setFlatListItems(temp);
          var temp = [];
          var len = results.rows.length;
 
@@ -220,26 +170,20 @@ export default function Home ({ navigation }) {
              temp.push(results.rows.item(i));
            }
            setFlatListItems(temp);
- console.log(temp)
+        console.log(temp)
          } else {
            alert('Cannot Search Entry!');
-         }
-                       }
-                       );
+         }});
                       });
-            };
+      };
     
-    let SearchEntry = () => {
-      save();
+    let SearchEntry = () => { // Function to Search Entries from the Database
+      save();       // using AsyncStorage Function to save Selected Values
       db.transaction((tx) => {
      tx.executeSql(
       'SELECT * FROM Timesheet WHERE date = ?',
       [currentDate],
        (tx, results) => {
-         //var temp = [];
-         //for (let i = 0; i < results.rows.length; ++i)
-           //temp.push(results.rows.item(i));
-         //setFlatListItems(temp);
          var temp = [];
          var len = results.rows.length;
 
@@ -250,12 +194,10 @@ export default function Home ({ navigation }) {
              temp.push(results.rows.item(i));
            }
            setFlatListItems(temp);
- console.log(temp)
+            console.log(temp)
          } else {
            alert('Cannot Search Entry!');
-         }
-                       }
-     );
+         }});
                      });
 
           db.transaction((tx) => {
@@ -263,9 +205,6 @@ export default function Home ({ navigation }) {
           'SELECT totalHrs FROM Timesheet WHERE date = ?',
           [currentDate],
           (tx, results) => {
-          //for (let i = 0; i < results.rows.length; ++i)
-          //temp.push(results.rows.item(i));
-          //setFlatListItems(temp);
           var temp = [];
           let sum = 0 ;
           var tot = [];
@@ -274,76 +213,29 @@ export default function Home ({ navigation }) {
 
           console.log('len', len);
           if(len >= 0 ) {
-
           for (let i = 0; i < results.rows.length; ++i) 
-      
           temp.push(results.rows.item(i));
-          // console.log("temp" + temp)
-          // const any = ['07:20', '07:52', '05:03', '01:01', '09:02', '06:00'];
-          // const summmm = any.reduce((acc, time) => acc.add(moment.duration(time), moment.duration()));
-          // console.log('summ:  ' + [Math.floor(summmm.asHours()), summmm.minutes()].join(':'));
-
            temp.forEach((item) => {
-            
              tot.push(filterTimeFormat(item.totalHrs));
-             
-             
-          //   //moment(item.totalHrs, "HH:mm")
            })
            tot.forEach(function (i){
-             sum = sum + parseFloat(i);
+             sum = sum + parseFloat(i); // add total hours of each entries for the given day
            }) 
           
-          var n = new Date(0,0);
-          n.setSeconds(+sum * 60 * 60);
+          var n = new Date(0,0); 
+          n.setSeconds(+sum * 60 * 60);  // Format total Hours of the day from 100 to 60 min Time formate
           settotalHrsforday(n.toTimeString().slice(0,5));
           console.log('sum: ' + sum + ' TOT: ' + tot + 'time: ' + n.toTimeString().slice(0,5));
           } 
           else {
           alert('Cannot Search Entry!');
           }
-        }
-            
-          );
+        });
           });
 };
 
-const addTimes = (startTime, endTime) => {
-  var times = [ 0, 0 ]
-  var max = times.length
 
-  var a = (startTime || '').split(':')
-  var b = (endTime || '').split(':')
-
-  // normalize time values
-  for (var i = 0; i < max; i++) {
-    a[i] = isNaN(parseInt(a[i])) ? 0 : parseInt(a[i])
-    b[i] = isNaN(parseInt(b[i])) ? 0 : parseInt(b[i])
-  }
-
-  // store time values
-  for (var i = 0; i < max; i++) {
-    times[i] = b[i] - a[i]
-  }
-
-  var hours = times[0]
-  var minutes = times[1]
-
-
-  if (minutes >= 60) {
-    var h = (minutes / 60) << 0
-    hours += h
-    minutes -= 60 * h
-  }
-
-  var addd = ('0' + hours).slice(-2) + ':' + ('0' + minutes).slice(-2);
-  console.log(addd);
-
-  return ('0' + hours).slice(-2) + ':' + ('0' + minutes).slice(-2)
-}
-
-
-let deleteEntry = () => {
+let deleteEntry = () => {   //Function to delete an entry from the database
   db.transaction((tx) => {
     console.log("Sample " + IDtimesheet); 
     tx.executeSql(
@@ -354,7 +246,7 @@ let deleteEntry = () => {
         if (results.rowsAffected > 0) {
           Alert.alert(
             'Sucess',
-            'Entry removed from Dataase',
+            'Entry removed from Database',
             [
               {
                 text: 'Ok',
@@ -371,9 +263,9 @@ let deleteEntry = () => {
   });
 };
 
- const save = async () => {
+ const save = async () => {  // Function to Implement AsyncStorage to save selected values by User on the Screen
     try{
-      await AsyncStorage.setItem("MyWeekEnding", Week)
+      await AsyncStorage.setItem("MyWeekEnding", Week)  
       await AsyncStorage.setItem("MyWeek", currentDate)
       await AsyncStorage.setItem("MyDays", dayoftheWeek)
     }
@@ -388,7 +280,8 @@ let deleteEntry = () => {
      let Week = await AsyncStorage.getItem("MyWeekEnding")
      let currentDate = await AsyncStorage.getItem("MyWeek")
      let dayoftheWeek = await AsyncStorage.getItem("MyDays")
-
+    
+     //Error checking to check for empty values
      if(Week !== null)
      {
       setWeek(Week)
@@ -567,13 +460,6 @@ let deleteEntry = () => {
 );
             
    }
-    /*
-    <View style={{marginLeft: -200, marginTop: -550}}>
-              
-          
-            </View>
-           
-    */
    
    const styles = StyleSheet.create({
        container:{

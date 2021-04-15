@@ -349,6 +349,35 @@ const renderUserNames = () => {
   //Alert.alert(DHrs + 'Hrs');
       setThrs(timetomins);
       console.log(timetomins);
+
+
+
+      db.transaction((tx) => {
+        tx.executeSql(
+          'UPDATE Timesheet set arrival = ?, depart = ? , dayoftheweek = ?, projNum = ?, siteID = ?, comment = ?, totalHrs = ?  where id_timesheet=?',
+          [frTimes, frFinTimes, dayoftheWeek, projNum, siteID, description, Thrs,  IDtimesheet],
+          (tx, results) => {
+            console.log('Results', results.rowsAffected);
+            if (results.rowsAffected > 0) {
+              Alert.alert(
+                'Sucess',
+                'Entry edited Succesfully !!',
+                [
+                  {
+                    text: 'Ok',
+                    onPress: () =>
+                    navigation.replace('Home', {
+                      someParam: 'Param',
+                    }),
+                  },
+                ],
+                { cancelable: false }
+              );
+            } else alert('Error editing entry !!!');
+          }
+        );
+      });
+      
  }
 
 

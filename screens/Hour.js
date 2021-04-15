@@ -21,7 +21,7 @@ const db = DatabaseConnection.getConnection();
   const [toggleCheckBox, setToggleCheckBox] = React.useState(false)
 
   const [modalVisible, setModalVisible] = React.useState(false);
-  const [dayoftheWeek, setDayoftheWeek] = React.useState('');
+  const [dayoftheWeek, setDayoftheWeek] = React.useState(moment().format("L"));
   const [projNum, setprojNum] = React.useState('');
   const [siteID, setsiteID] = React.useState('')
   const [Thrs, setThrs] = React.useState('');
@@ -42,7 +42,7 @@ const db = DatabaseConnection.getConnection();
   const [frTimes, setfrTimes] = React.useState('');
   const [frFinTimes, setfrFinTimes] = React.useState('');
   const [description, setDescription] = React.useState('');
-  const [selectedWeek, setselectedWeek] = React.useState();
+  const [selectedWeek, setselectedWeek] = React.useState(moment().day(5).format("L"));
   var timeList  = []; //array that stores entry details
 
   const onDismiss = React.useCallback(() => {
@@ -473,6 +473,7 @@ const time_clash = () => {
     moment.locale('en')
         console.log("saveStartingWeek - value:", moment(value).add(5, "days").format("L"));
         setselectedWeek(moment(value).add(5, "days").format("L"));
+        console.log("this friday: " + moment().day(5).format("L") + "todays date: " + moment().format("L"))
         //setselectedWeek(navigation.getParam('eow'));
         //setselectedWeek(new Date(value).toString());
         }
@@ -578,12 +579,15 @@ const time_clash = () => {
               <Text style={{fontWeight: 'bold', color: '#091629'}}>
                   Day of the Week 
               </Text>
-             <Picker style={styles.datefive}
+             <Picker 
+              mode="dropdown"
+              style={styles.datefive}
               selectedValue={dayoftheWeek}
               onValueChange=
               {
                   saveDayofWeek
               }>
+                      <Picker.Item key="uniqueID9" label="Please Select a Day" value="" />
                       <Picker.Item label="Monday" value="monday" />
                       <Picker.Item label="Tuesday" value="tuesday" />
                       <Picker.Item label="Wednesday" value="wednesday" />
@@ -609,7 +613,7 @@ const time_clash = () => {
                     //this.setState({ projNum: itemValue })
                     setprojNum(itemValue)
                 }>
-                <Picker.Item key="uniqueID9" label="Please Select" value="" />
+                <Picker.Item key="uniqueID9" label="Please Select Project" value="" />
                 <Picker.Item key="uniqueID10" label="VOD103015 ~ Assure Provide engsupport Oct 1st to Oct 31st 2019" value="VOD103015" />
                 <Picker.Item key="uniqueID11" label="ABO101597 ~ Over head Line works Cluster 1 ~ CLS001 ~ Cluster1 OHL" value="ABO101597" />
                 <Picker.Item key="uniqueID12" label="VOD75860 ~ DN823 Robinsons Transport" value="VOD75860" />
@@ -627,7 +631,7 @@ const time_clash = () => {
                     //this.setState({ siteID: itemValue })
                     setsiteID(itemValue)
                 }>
-                <Picker.Item label="Please Select" value="" />
+                <Picker.Item label="Please Select a Site" value="" />
                      {options}
 
             </Picker>}
