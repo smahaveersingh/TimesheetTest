@@ -262,7 +262,7 @@ const time_clash = () => {
          if(len <= 0)
          {
             console.log("Time Slot Available " + temp);
-            add_entry()
+            add_entry();
          }
          else{
             console.log("Error")

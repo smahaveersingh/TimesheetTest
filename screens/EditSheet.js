@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import { StyleSheet, Text, View, SafeAreaView, TextInput, Alert, Pressable, Modal} from 'react-native';
 import AsyncStorage from "@react-native-community/async-storage";
@@ -20,22 +21,29 @@ const db = DatabaseConnection.getConnection();
 const EditSheet = ({ navigation }) => {
 
   const selectDate = new Date();
+  const [currentDate, setCurrentDate] = React.useState(navigation.getParam('date'));
+  const [toggleCheckBox, setToggleCheckBox] = React.useState(false)
+
+  const [modalVisible, setModalVisible] = React.useState(false);
   const [dayoftheWeek, setDayoftheWeek] = React.useState(navigation.getParam('dayoftheweek'));
   const [projNum, setprojNum] = React.useState(navigation.getParam('projNum'));
   const [siteID, setsiteID] = React.useState(navigation.getParam('siteID'))
-  const [Thrs, setThrs] = React.useState(navigation.getParam('Thrs'));
+  const [Thrs, setThrs] = React.useState('');
   const [visible, setVisible] = React.useState(false);
   const [finishvisible, setfinishVisible] = React.useState(false);
   const [Lvisible, setLVisible] = React.useState(false);
   const [Lfinishvisible, setLfinishVisible] = React.useState(false);
-  const [currentDate, setCurrentDate] = React.useState(navigation.getParam('date'));
 
   const [IDtimesheet, setIDtimesheet] = React.useState(navigation.getParam('id_timesheet'));
-
   const [Hours, setHours] = React.useState('');
   const [Minutes, setMinutes] = React.useState('');
   const [finishHours, setfinishHours] = React.useState(selectDate.getHours());
   const [finishMinutes, setfinishMinutes] = React.useState(selectDate.getMinutes());
+  const [LunchHours, setLunchHours] = React.useState(selectDate.getHours());
+  const [LunchMinutes, setLunchMinutes] = React.useState(selectDate.getMinutes());
+  const [finishLunchHours, setfinishLunchHours] = React.useState(selectDate.getHours());
+  const [finishLunchMinutes, setfinishLunchMinutes] = React.useState(selectDate.getMinutes());
+  
   const [frTimes, setfrTimes] = React.useState(navigation.getParam('arrival'));
   const [frFinTimes, setfrFinTimes] = React.useState(navigation.getParam('depart'));
   const [selectedWeek, setselectedWeek] = React.useState(navigation.getParam('eow'));
@@ -87,13 +95,32 @@ const onFinishConfirm = React.useCallback(
     var Fintimes = FinHrs.format('HH') + ':' + FinMnts.format('mm');
     console.log('Finish Times: ' + Fintimes);
     setfrFinTimes(Fintimes);
-    
+    calcTotalHrs()
   },
   [setfinishVisible]
-  
 );
 
+const onLConfirm = React.useCallback(
+  ({ hours, minutes }) => {
+    setLVisible(false);
+    console.log({ hours, minutes });
+    //setTime('{$hours}:${minutes}')
+    hours = setLunchHours(hours);
+    minutes = setLunchMinutes(minutes);
+  },
+  [setLVisible]
+);
 
+const onLFinishConfirm = React.useCallback(
+  ({ hours, minutes }) => {
+    setLfinishVisible(false);
+    console.log({ hours, minutes });
+    //setTime('{$hours}:${minutes}')
+    hours = setfinishLunchHours(hours);
+    minutes = setfinishLunchMinutes(minutes);
+  },
+  [setLfinishVisible]
+);
 
 
 
@@ -175,6 +202,55 @@ const renderUserNames = () => {
 
 }
 
+React.useEffect(() => {
+  var tdate = new Date(); //Current Date
+  var monday = moment().day((1)+1); //shows Monday
+  var friday = moment().day((5)+1); //shows Monday
+  var Tday = tdate.getDay(); //Current Day
+  var month = new Date().getMonth() + 1; //Current Month
+  var year = new Date().getFullYear(); //Current Year
+  var hours = new Date().getHours(); //Current Hours
+  var min = new Date().getMinutes(); //Current Minutes
+  var sec = new Date().getSeconds(); //Current Seconds
+  /*setCurrentDate(
+  
+    //date + '/' + month + '/' + year 
+    //+ ' ' + hours + ':' + min + ':' + sec
+    moment(tdate).format("YYYY-MM-DD")
+);*/
+}, []);
+
+const testClash = (d1, d2) => {     //calculating the weight of the conflict.
+  // d1 and d2 in array format
+// [moment from, moment to]
+var count = 0;
+for (var i = 0, t; t = d1[i]; i++) {
+// use isBetween exclusion
+if (t.isBetween(d2[0], d2[1], null, '()')) {
+  count++;
+}
+}
+
+for (var i = 0, t; t = d2[i]; i++) {
+// use isBetween exclusion
+if (t.isBetween(d1[0], d1[1], null, '()')) {
+  count++;
+}
+}
+
+if (count > 1) {
+return console.log('completely conflict');
+}
+
+if (count > 0) {
+return console.log('partial conflict');
+}
+
+return console.log('something else');
+}
+
+var t1 = [moment(frTimes).format('HH:mm'), moment(frTimes).format('HH:mm')]
+
 
   let updateAllStates = (name, contact, address) => {
     setUserName(name);
@@ -183,30 +259,30 @@ const renderUserNames = () => {
   };
 
   let searchUser = () => {
-    // db.transaction((tx) => {
-    //   tx.executeSql(
-    //     'SELECT * FROM table_user where id_timesheet = ?',
-    //     [navigation.getParam("id_timesheet")],
-    //     (tx, results) => {
-    //       var len = results.rows.length;
-    //       if (len > 0) {
-    //         let res = results.rows.item(0);
-    //         updateAllStates(
-    //           res.user_name,
-    //           res.user_contact,
-    //           res.user_address
-    //         );
-    //       } else {
-    //         alert('Usuário não encontrado!');
-    //         updateAllStates('', '', '');
-    //       }
-    //     }
-    //   );
-    // });
-    calcTotalHrs();
+    db.transaction((tx) => {
+      tx.executeSql(
+        'SELECT * FROM table_user where id_timesheet = ?',
+        [navigation.getParam("id_timesheet")],
+        (tx, results) => {
+          var len = results.rows.length;
+          if (len > 0) {
+            let res = results.rows.item(0);
+            updateAllStates(
+              res.user_name,
+              res.user_contact,
+              res.user_address
+            );
+          } else {
+            alert('Usuário não encontrado!');
+            updateAllStates('', '', '');
+          }
+        }
+      );
+    });
   };
   let updateUser = () => {
-    
+    console.log( selectedWeek, currentDate, projNum, description, frTimes, frFinTimes, Thrs, siteID, dayoftheWeek);
+
     if (!frTimes) {
       alert('Add Hours for the entry');
       return;
@@ -234,14 +310,14 @@ const renderUserNames = () => {
 
     db.transaction((tx) => {
       tx.executeSql(
-        'UPDATE Timesheet set arrival = ?, depart = ? , dayoftheweek = ?, projNum = ?, siteID = ?, comment = ?, totalHrs = ?  where id_timesheet=?',
-        [frTimes, frFinTimes, dayoftheWeek, projNum, siteID, description, Thrs,  IDtimesheet],
+        'UPDATE Timesheet set arrival = ?, depart = ? , dayoftheweek = ?, projNum = ?, siteID = ?, comment = ?  where id_timesheet=?',
+        [frTimes, frFinTimes, dayoftheWeek, projNum, siteID, description,  IDtimesheet],
         (tx, results) => {
           console.log('Results', results.rowsAffected);
           if (results.rowsAffected > 0) {
             Alert.alert(
-              'Sucess',
-              'Entry edited Succesfully !!',
+              'Sucesso',
+              'Usuário atualizado com sucesso !!',
               [
                 {
                   text: 'Ok',
@@ -253,11 +329,10 @@ const renderUserNames = () => {
               ],
               { cancelable: false }
             );
-          } else alert('Error editing entry !!!');
+          } else alert('Erro ao atualizar o usuário');
         }
       );
     });
-    
   };
   
 
@@ -269,14 +344,10 @@ const renderUserNames = () => {
     //console.log(next.getTime());
     moment.locale('en');
     console.log(moment(next.getTime()).format("L"));
-    //setCurrentDate(moment(next.getTime()).format("L"));
- }
+    setCurrentDate(moment(next.getTime()).format("L"));
+    
 
- const saveProjNum = (itemValue, itemIndex) => {
-  //this.setState({ projNum: itemValue })
-  setprojNum(itemValue);
-  calcTotalHrs();
- }
+  }
 
   const getNextDay = (dayName) => {
     var todayDate = new Date(selectedWeek);
@@ -312,7 +383,7 @@ const renderUserNames = () => {
 
   const getTimefromMins = (mins) => {
     if (mins >= 24 * 60 || mins < 0) {
-      Alert.alert("Valid input should be greater than or equal to 0 and less than 1440.");
+      Alert.alert("Any Given Entry Should be less than 12 Hours");
     }
     var h = mins / 60 | 0;
     var m = mins % 60 | 0;
@@ -335,53 +406,46 @@ const renderUserNames = () => {
   // }
 
    const calcTotalHrs = () => {
-    setfinishVisible(true)
-      var StrtTime = moment(frTimes, "HH:mm");
-      var endTime = moment(frFinTimes, "HH:mm");
+    //setfinishVisible(true)
+     var StrtTime = moment(frTimes, "HH:mm");
+     var endTime = moment(frFinTimes, "HH:mm");
 
-      var duration = moment.duration(StrtTime.diff(endTime));
-      var DHrs = parseInt(duration.asHours());
-     var Dmins = parseInt(duration.asMinutes())-DHrs* 60;
-      var Tot  = endTime.diff(StrtTime, 'minutes');
-      var timetomins = getTimefromMins(Tot);
-  //    //setThrs(Tot);
+     var duration = moment.duration(StrtTime.diff(endTime));
+     var DHrs = parseInt(duration.asHours());
+    var Dmins = parseInt(duration.asMinutes())-DHrs* 60;
+     var Tot  = endTime.diff(StrtTime, 'minutes');
+     var timetomins = getTimefromMins(Tot);
+     //setThrs(Tot);
      
-  //Alert.alert(DHrs + 'Hrs');
-      setThrs(timetomins);
-      console.log(timetomins);
-
-
-
-      db.transaction((tx) => {
-        tx.executeSql(
-          'UPDATE Timesheet set arrival = ?, depart = ? , dayoftheweek = ?, projNum = ?, siteID = ?, comment = ?, totalHrs = ?  where id_timesheet=?',
-          [frTimes, frFinTimes, dayoftheWeek, projNum, siteID, description, Thrs,  IDtimesheet],
-          (tx, results) => {
-            console.log('Results', results.rowsAffected);
-            if (results.rowsAffected > 0) {
-              Alert.alert(
-                'Sucess',
-                'Entry edited Succesfully !!',
-                [
-                  {
-                    text: 'Ok',
-                    onPress: () =>
-                    navigation.replace('Home', {
-                      someParam: 'Param',
-                    }),
-                  },
-                ],
-                { cancelable: false }
-              );
-            } else alert('Error editing entry !!!');
-          }
-        );
-      });
-      
+  //   //Alert.alert(DHrs + 'Hrs');
+     setThrs(timetomins);
+     db.transaction((tx) => {
+      tx.executeSql(
+        'UPDATE Timesheet set totalHrs = ?  where id_timesheet=?',
+        [timetomins,  IDtimesheet],
+        (tx, results) => {
+          console.log('Results', results.rowsAffected);
+          if (results.rowsAffected > 0) 
+          {
+           console.log("Sucess " + timetomins)
+          } 
+          else 
+          alert('Erro ao atualizar o usuário');
+        }
+      );
+    });
  }
 
+ const finishTime = () => {
+  setfinishVisible(true)
+ }
 
+ const both  = () => 
+ {
+   calcTotalHrs();
+   updateUser(Thrs);
 
+ }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -429,30 +493,6 @@ const renderUserNames = () => {
   
   </View>
   
-      <View>
-                <Text style={{fontWeight: 'bold', color: '#091629'}}>
-                    Day of the Week 
-                </Text>
-               <Picker style={styles.datefive}
-                selectedValue={dayoftheWeek}
-                onValueChange=
-                {
-                    saveDayofWeek
-                }>
-                        <Picker.Item label="Monday" value="monday" />
-                        <Picker.Item label="Tuesday" value="tuesday" />
-                        <Picker.Item label="Wednesday" value="wednesday" />
-                        <Picker.Item label="Thursday" value="thursday" />
-                        <Picker.Item label="Friday" value="friday" />
-                        <Picker.Item label="Saturday" value="saturday" />
-                        <Picker.Item label="Sunday" value="sunday" />
-                       
-              </Picker>
-      </View>
-  
-  
-  
-  
       <View style={styles.btn}>
         <View style={{ flexDirection: 'row' }}>
           <Text style={styles.titleStyle}>Project No </Text>
@@ -460,8 +500,9 @@ const renderUserNames = () => {
               {<Picker
                   mode='dropdown'
                   selectedValue={projNum}
-                  onValueChange={
-                    saveProjNum
+                  onValueChange={(itemValue, itemIndex) =>
+                      //this.setState({ projNum: itemValue })
+                      setprojNum(itemValue)
                   }>
                   <Picker.Item key="uniqueID9" label="Please Select" value="" />
                   <Picker.Item key="uniqueID10" label="VOD103015 ~ Assure Provide engsupport Oct 1st to Oct 31st 2019" value="VOD103015" />
@@ -501,7 +542,7 @@ const renderUserNames = () => {
   
   />
   
-        <Button onPress={updateUser}>
+        <Button onPress={both}>
           Update: {Thrs}
   </Button>
   

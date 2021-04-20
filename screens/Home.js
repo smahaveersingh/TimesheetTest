@@ -1,9 +1,14 @@
 import * as React from 'react';
-import { StyleSheet, View, Text, Image, StatusBar, Animated, TouchableOpacity, Alert} from 'react-native';
-import { Button, IconButton, Card } from 'react-native-paper';
+import { StyleSheet, View, Text, Image, StatusBar, Animated, TouchableOpacity, Alert, Pressable, Modal} from 'react-native';
+import { Button, IconButton, Card, Colors } from 'react-native-paper';
+import { TimePickerModal } from 'react-native-paper-dates';
 import { Picker } from '@react-native-picker/picker';
 import moment from 'moment';
 import WeekSelector from 'react-native-week-selector';
+import { MaterialCommunityIcons, AntDesign } from '@expo/vector-icons';
+import CheckBox from '@react-native-community/checkbox';
+import _ from "lodash";
+import Dialog from "react-native-dialog";
 import { DatabaseConnection } from '../components/database-connection';
 import { colors } from 'react-native-elements';
 import AwesomeAlert from 'react-native-awesome-alerts';
@@ -15,15 +20,198 @@ const db = DatabaseConnection.getConnection();
 
 export default function Home ({ navigation }) {
 
-  const [flatListItems, setFlatListItems] = React.useState([]); // variable for FlatList Items
-  const [dayoftheWeek, setDayoftheWeek] = React.useState('');   // variable for Day of Week
-  const [Week, setWeek] = React.useState(moment().day(5).format("L"));                   // variable for End of Week
-  const [currentDate, setCurrentDate] = React.useState(moment().format("L"));     // variable for date
-  const [formatDay, setformatDay] = React.useState('');         // variable for formatting date
-  const [showAlert, setshowAlert] = React.useState(false);      // Flag variable for Modal popup (Edit/Delete)
-  const [IDtimesheet, setIDtimesheet] = React.useState('');     // variable for id_timesheeet
-  const [totalHrsforday, settotalHrsforday] = React.useState([]); // variable for Total Hours
+  const selectDate = new Date();
+  const [flatListItems, setFlatListItems] = React.useState([]);
+  const [modalVisible, setModalVisible] = React.useState(false);
+  const [Hours, setHours] = React.useState('');
+  const [Minutes, setMinutes] = React.useState('');
+  const [toggleCheckBox, setToggleCheckBox] = React.useState(false)
+  const [FINHours, setFINHours] = React.useState('');
+  const [FINMinutes, setFINMinutes] = React.useState('');
+  const [dayoftheWeek, setDayoftheWeek] = React.useState('');
+  const [Week, setWeek] = React.useState(moment().day(5).format("L"));
+  const [finishvisible, setfinishVisible] = React.useState(false);
+  const [finishHours, setfinishHours] = React.useState(selectDate.getHours());
+  const [finishMinutes, setfinishMinutes] = React.useState(selectDate.getMinutes());
+  const [currentDate, setCurrentDate] = React.useState(moment().format("L"));
+  const [formatDay, setformatDay] = React.useState('');
+  const [visible, setVisible] = React.useState(false);
+  const [showAlert, setshowAlert] = React.useState(false);
+  const [IDtimesheet, setIDtimesheet] = React.useState('');
+  const [frTimes, setfrTimes] = React.useState('');
+  const [frFinTimes, setfrFinTimes] = React.useState('');
+  const [ columns, setColumns ] = React.useState([
+    "Project",
+    "Site",
+    "Start/End",
+    "Total"
+  ])
+  const [ direction, setDirection ] = React.useState(null);
+  const [ selectedColumn, setSelectedColumn ] = React.useState(null);
+  const [totalHrsforday, settotalHrsforday] = React.useState([]);
+  const [selectedWeek, setselectedWeek] = React.useState(moment().day(5).format("L"));
+  const [Thrs, setThrs] = React.useState('');
 
+  var timeList = [];
+  /*_onPressButton  = () => {
+    alert(
+      <Text>pop</Text>
+        )
+      }*/
+      const onDismiss = React.useCallback(() => {
+        setVisible(false)
+      }, [setVisible])
+    
+      const onFinishDismiss = React.useCallback(() => {
+        setfinishVisible(false)
+      }, [setfinishVisible])
+    
+    
+      const onConfirm = React.useCallback(
+        ({ hours, minutes }) => {
+          setVisible(false);
+          console.log({ hours, minutes });
+          var FrHours = moment(hours, 'HH');
+          var FrMinutes = moment(minutes, 'mm');
+          //setTime('{$hours}:${minutes}')
+          hours = setHours(FrHours.format('HH'));
+          minutes = setMinutes(FrMinutes.format('mm'));
+          //setHours(hours.toString());
+          //setMinutes(minutes.toString());
+          var times = FrHours.format('HH') + ':' + FrMinutes.format('mm');
+          console.log('time: ' + times);
+          setfrTimes(times);
+        },
+        [setVisible]
+      );
+    
+      const onFinishConfirm = React.useCallback(
+        ({ hours, minutes }) => {
+          setfinishVisible(false);
+          console.log({ hours, minutes });
+          var FinHrs = moment(hours, 'HH');
+          var FinMnts = moment(minutes, 'mm');
+          hours = setfinishHours(FinHrs.format('HH'));
+          minutes = setfinishMinutes(FinMnts.format('mm'));
+          var Fintimes = FinHrs.format('HH') + ':' + FinMnts.format('mm');
+          console.log('Finish Times: ' + Fintimes);
+          setfrFinTimes(Fintimes);
+          
+        },
+        [setfinishVisible]
+      );
+
+      const saveStartingWeek = (value) => {
+    
+        moment.locale('en')
+            console.log("saveStartingWeek - value:", moment(value).add(5, "days").format("L"));
+            setselectedWeek(moment(value).add(5, "days").format("L"));
+            //setselectedWeek(navigation.getParam('eow'));
+            //setselectedWeek(new Date(value).toString());
+            }
+      
+    
+      const getTimefromMins = (mins) => {
+        if (mins >= 24 * 60 || mins < 0) {
+          Alert.alert("Valid input should be greater than or equal to 0 and less than 1440.");
+        }
+        var h = mins / 60 | 0;
+        var m = mins % 60 | 0;
+    
+        return moment.utc().hours(h).minutes(m).format("HH:mm");
+      }
+    
+      let updateUser = () => {
+        console.log( selectedWeek, currentDate, frTimes, frFinTimes, Thrs, dayoftheWeek);
+    
+        if (!frTimes) {
+          alert('Add Hours for the entry');
+          return;
+        }
+        
+        if (!frFinTimes) {
+          alert('Add End Hours for the entry');
+          return;
+        }  
+        
+        if (!dayoftheWeek) {
+          alert('Please select a day of the week');
+          return;
+        }
+        
+    
+    
+        db.transaction((tx) => {
+          tx.executeSql(
+            'UPDATE Timesheet set arrival = ?, depart = ? , dayoftheweek = ?, projNum = ?, siteID = ?, comment = ?, date = ?  where id_timesheet=?',
+            [frTimes, frFinTimes, dayoftheWeek, 'Lunch', 'Lunch', 'Lunch', currentDate,  IDtimesheet],
+            (tx, results) => {
+              console.log('Results', results.rowsAffected);
+              if (results.rowsAffected > 0) {
+                Alert.alert(
+                  'Sucesso',
+                  'Usuário atualizado com sucesso !!',
+                  [
+                    {
+                      text: 'Ok',
+                      onPress: () =>
+                      navigation.replace('Home', {
+                        someParam: 'Param',
+                      }),
+                    },
+                  ],
+                  { cancelable: false }
+                );
+              } else alert('Erro ao atualizar o usuário');
+            }
+          );
+        });
+      };
+      
+    
+       const calcTotalHrs = () => {
+        //setfinishVisible(true)
+         var StrtTime = moment(frTimes, "HH:mm");
+         var endTime = moment(frFinTimes, "HH:mm");
+    
+         var duration = moment.duration(StrtTime.diff(endTime));
+         var DHrs = parseInt(duration.asHours());
+        var Dmins = parseInt(duration.asMinutes())-DHrs* 60;
+         var Tot  = endTime.diff(StrtTime, 'minutes');
+         var timetomins = getTimefromMins(Tot);
+
+         
+         setThrs(timetomins);
+         console.log("CalcTot: " + timetomins);
+        //  db.transaction((tx) => {
+        //   tx.executeSql(
+        //     'UPDATE Timesheet set totalHrs = ?  where id_timesheet = ?',
+        //     [timetomins,  IDtimesheet],
+        //     (tx, results) => {
+        //       console.log('Results', results.rowsAffected);
+        //       if (results.rowsAffected > 0) 
+        //       {
+        //        console.log("Sucess: " + timetomins)
+        //       } 
+        //       else 
+        //       alert('Error in calculating total hours');
+        //     }
+        //   );
+        // });
+     }
+    
+     const finishTime = () => {
+      setfinishVisible(true)
+     }
+    
+     const both  = () => 
+     {
+       calcTotalHrs();
+       add_lunch();
+     }
+     
+      
+    
       const BG_IMG = 'https://www.solidbackgrounds.com/images/950x350/950x350-snow-solid-color-background.jpg';
 
       const SPACING = 20;
@@ -40,65 +228,90 @@ export default function Home ({ navigation }) {
         tint: "#2b49c3",
       }
 
-      const popAlert = () => // Flag Function to display Alert
+      const popAlert = () => 
       {
           setshowAlert (true);
       }
      
-      const hideAlert = () => // Flag Function to hide Alert
+      const hideAlert = () => 
       {
           setshowAlert (false);
       };
 
      
-    const pressHandler = () => // Function to navigate to Hours (Add Entry) Screen
+    const pressHandler = () => 
     {
       save();
       navigation.navigate('Hour')
-    }
+    };
 
-    const deleteHandler = () => // Function to navigate to ViewEntry Screen
+    const lunchHandler = () => 
+    {
+      save();
+      navigation.navigate('Lunch')
+    };
+
+    const deleteHandler = () => 
     {
       navigation.navigate('ViewEntry')
     }
 
-    const saveDayofWeek = (itemValue, itemIndex) => {  // function to save Day of the Week
+    const saveDayofWeek = (itemValue, itemIndex) => {
       setDayoftheWeek(itemValue);
+  
       var next = getNextDay(itemValue);
+      //console.log(next.getTime());
       console.log(moment(next.getTime()).format('L'));
       setCurrentDate(moment(next.getTime()).format('L'));
       setformatDay(moment(next.getTime()).format('MMM Do'));
+      calcTotalHrs();
     }
   
-    const getNextDay = (dayName) => {  // function used to get desired day, it is used as a helper for saving Day of the Week
+    const getNextDay = (dayName) => {
       var todayDate = new Date(Week);
       var now = todayDate.getDay();
   
       // Days of the week
-      var daysoftheweek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    
-      // The index for the day you want
-      var Indexofday = daysoftheweek.indexOf(dayName.toLowerCase());
-    
-      // Find the difference between the current day and the one you want
-      // If it's the same day as today (or a negative number), jump to the next week
-      var diff = Indexofday - now;
-      diff = diff < 1 ? diff : diff;
-    
-      // Get the timestamp for the desired day
-      var nextDayTimestamp = todayDate.getTime() + (1000 * 60 * 60 * 24 * diff);
-    
-      // Get the next day
-      return new Date(nextDayTimestamp);
+    var daysoftheweek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  
+    // The index for the day you want
+    var Indexofday = daysoftheweek.indexOf(dayName.toLowerCase());
+  
+    // Find the difference between the current day and the one you want
+    // If it's the same day as today (or a negative number), jump to the next week
+    var diff = Indexofday - now;
+    diff = diff < 1 ? diff : diff;
+  
+    // Get the timestamp for the desired day
+    var nextDayTimestamp = todayDate.getTime() + (1000 * 60 * 60 * 24 * diff);
+  
+    // Get the next day
+    return new Date(nextDayTimestamp);
+  
     }
 
-    const saveWEEK = (value) => { // Function to save End of Week
+    const saveWEEK = (value) => {
       moment.locale('en');
       console.log("saveStartingWeek - value:", moment(value).add(5, "days").format('L'));
         setWeek(moment(value).add(5, "days").format('L'));
     }
 
-    const filterTimeFormat = (time) => { // Function to filter and split Time variables into Hours & Minutes
+    /*React.useEffect(() => {
+      db.transaction((tx) => {
+        tx.executeSql(
+          'SELECT * FROM Timesheet',
+          [],
+          (tx, results) => {
+            var temp = [];
+            for (let i = 0; i < results.rows.length; ++i)
+              temp.push(results.rows.item(i));
+            setFlatListItems(temp);
+          }
+        );
+      });
+    }, []);*/
+
+    const filterTimeFormat = (time) => {
       var decimal_places = 2;
 
       // Maximum number of hours before we should assume minutes were intended. Set to 0 to remove the maximum.
@@ -115,6 +328,12 @@ export default function Home ({ navigation }) {
     
       // 2h
       var hour_string_format = time.toLowerCase().match(/([\d]+)h/);
+    
+      // if (minutes >= 60) {
+      //     minutes = minutes - 60;
+      //     hours = hours + 1;
+      //     console.log('min: ' + minutes)
+      //   }
         
       if (time_format != null) {
         var hours = parseInt(time_format[1]);
@@ -153,37 +372,17 @@ export default function Home ({ navigation }) {
     }
    
 
-    let Update = () => {  // Function used to get recent updated entries from the Database
-      save(); // using AsyncStorage Function to save Selected Values
-     db.transaction((tx) => {
-     tx.executeSql(
-      'SELECT * FROM Timesheet WHERE date = ?',
-      [currentDate],
-       (tx, results) => {
-         var temp = [];
-         var len = results.rows.length;
-
-         console.log('len', len);
-         if(len >= 0 ) {
-          
-           for (let i = 0; i < results.rows.length; ++i) {
-             temp.push(results.rows.item(i));
-           }
-           setFlatListItems(temp);
-        console.log(temp)
-         } else {
-           alert('Cannot Search Entry!');
-         }});
-                      });
-      };
-    
-    let SearchEntry = () => { // Function to Search Entries from the Database
-      save();       // using AsyncStorage Function to save Selected Values
+    let Update = () => {
+      save();
       db.transaction((tx) => {
      tx.executeSql(
       'SELECT * FROM Timesheet WHERE date = ?',
       [currentDate],
        (tx, results) => {
+         //var temp = [];
+         //for (let i = 0; i < results.rows.length; ++i)
+           //temp.push(results.rows.item(i));
+         //setFlatListItems(temp);
          var temp = [];
          var len = results.rows.length;
 
@@ -194,10 +393,42 @@ export default function Home ({ navigation }) {
              temp.push(results.rows.item(i));
            }
            setFlatListItems(temp);
-            console.log(temp)
+ console.log(temp)
          } else {
            alert('Cannot Search Entry!');
-         }});
+         }
+                       }
+                       );
+                      });
+            };
+    
+    let SearchEntry = () => {
+      save();
+      db.transaction((tx) => {
+     tx.executeSql(
+      'SELECT * FROM Timesheet WHERE date = ?',
+      [currentDate],
+       (tx, results) => {
+         //var temp = [];
+         //for (let i = 0; i < results.rows.length; ++i)
+           //temp.push(results.rows.item(i));
+         //setFlatListItems(temp);
+         var temp = [];
+         var len = results.rows.length;
+
+         console.log('len', len);
+         if(len >= 0 ) {
+          
+           for (let i = 0; i < results.rows.length; ++i) {
+             temp.push(results.rows.item(i));
+           }
+           setFlatListItems(temp);
+ console.log(temp)
+         } else {
+           alert('Cannot Search Entry!');
+         }
+                       }
+     );
                      });
 
           db.transaction((tx) => {
@@ -205,6 +436,9 @@ export default function Home ({ navigation }) {
           'SELECT totalHrs FROM Timesheet WHERE date = ?',
           [currentDate],
           (tx, results) => {
+          //for (let i = 0; i < results.rows.length; ++i)
+          //temp.push(results.rows.item(i));
+          //setFlatListItems(temp);
           var temp = [];
           let sum = 0 ;
           var tot = [];
@@ -213,29 +447,76 @@ export default function Home ({ navigation }) {
 
           console.log('len', len);
           if(len >= 0 ) {
+
           for (let i = 0; i < results.rows.length; ++i) 
+      
           temp.push(results.rows.item(i));
+          // console.log("temp" + temp)
+          // const any = ['07:20', '07:52', '05:03', '01:01', '09:02', '06:00'];
+          // const summmm = any.reduce((acc, time) => acc.add(moment.duration(time), moment.duration()));
+          // console.log('summ:  ' + [Math.floor(summmm.asHours()), summmm.minutes()].join(':'));
+
            temp.forEach((item) => {
+            
              tot.push(filterTimeFormat(item.totalHrs));
+             
+             
+          //   //moment(item.totalHrs, "HH:mm")
            })
            tot.forEach(function (i){
-             sum = sum + parseFloat(i); // add total hours of each entries for the given day
+             sum = sum + parseFloat(i);
            }) 
           
-          var n = new Date(0,0); 
-          n.setSeconds(+sum * 60 * 60);  // Format total Hours of the day from 100 to 60 min Time formate
+          var n = new Date(0,0);
+          n.setSeconds(+sum * 60 * 60);
           settotalHrsforday(n.toTimeString().slice(0,5));
           console.log('sum: ' + sum + ' TOT: ' + tot + 'time: ' + n.toTimeString().slice(0,5));
           } 
           else {
           alert('Cannot Search Entry!');
           }
-        });
+        }
+            
+          );
           });
 };
 
+const addTimes = (startTime, endTime) => {
+  var times = [ 0, 0 ]
+  var max = times.length
 
-let deleteEntry = () => {   //Function to delete an entry from the database
+  var a = (startTime || '').split(':')
+  var b = (endTime || '').split(':')
+
+  // normalize time values
+  for (var i = 0; i < max; i++) {
+    a[i] = isNaN(parseInt(a[i])) ? 0 : parseInt(a[i])
+    b[i] = isNaN(parseInt(b[i])) ? 0 : parseInt(b[i])
+  }
+
+  // store time values
+  for (var i = 0; i < max; i++) {
+    times[i] = b[i] - a[i]
+  }
+
+  var hours = times[0]
+  var minutes = times[1]
+
+
+  if (minutes >= 60) {
+    var h = (minutes / 60) << 0
+    hours += h
+    minutes -= 60 * h
+  }
+
+  var addd = ('0' + hours).slice(-2) + ':' + ('0' + minutes).slice(-2);
+  console.log(addd);
+
+  return ('0' + hours).slice(-2) + ':' + ('0' + minutes).slice(-2)
+}
+
+
+let deleteEntry = () => {
   db.transaction((tx) => {
     console.log("Sample " + IDtimesheet); 
     tx.executeSql(
@@ -246,7 +527,7 @@ let deleteEntry = () => {   //Function to delete an entry from the database
         if (results.rowsAffected > 0) {
           Alert.alert(
             'Sucess',
-            'Entry removed from Database',
+            'Entry removed from Dataase',
             [
               {
                 text: 'Ok',
@@ -263,9 +544,87 @@ let deleteEntry = () => {   //Function to delete an entry from the database
   });
 };
 
- const save = async () => {  // Function to Implement AsyncStorage to save selected values by User on the Screen
+const setCheckBox = (newValue) => {
+  setToggleCheckBox(newValue);
+  calcTotalHrs();
+}
+
+const add_lunch = () => {
+  console.log( 1, selectedWeek, currentDate, 'Lunch', 'Lunch', frTimes, frFinTimes, Thrs, 'Lunch', dayoftheWeek);
+
+  if(toggleCheckBox == false)
+{
+
+  db.transaction(function (tx) {
+    tx.executeSql(
+      'INSERT INTO Timesheet(user_id, eow, date, projNum, comment , arrival, depart, siteID, totalHrs, dayoftheweek) VALUES (?,?,?,?,?,?,?,?,?,?)',
+      [1, selectedWeek, currentDate, 'Lunch', 'Lunch', frTimes, frFinTimes, 'Lunch', Thrs, dayoftheWeek],
+      (tx, results) => {
+        console.log('Results', results.rowsAffected);
+        if (results.rowsAffected > 0) {
+          Alert.alert(
+            'Sucess',
+            'Entry added succesfully to DB !!!',
+            [
+              {
+                text: 'Ok',
+                onPress: () =>
+                navigation.replace('Home', {
+                  someParam: 'Param',
+                }),
+              },
+            ],
+            { cancelable: false }
+          );
+        } else alert('Error Entry unsuccesfull !!!');
+      }
+    );
+    //save()
+  });
+}
+
+else if (toggleCheckBox == true)
+{
+db.transaction(function (tx) {
+  tx.executeSql(
+    'INSERT INTO Timesheet(user_id, eow, date, projNum, comment , arrival, depart, totalHrs, siteID, dayoftheweek) VALUES (?,?,?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?,?,?)',
+    [1, selectedWeek, moment(selectedWeek).day("Monday").format('L'), "Lunch", 'Lunch', frTimes, frFinTimes, Thrs, 'Lunch', dayoftheWeek , 
+    1, selectedWeek, moment(selectedWeek).day("Tuesday").format('L'), 'Lunch', 'Lunch', frTimes, frFinTimes,  Thrs, 'Lunch', dayoftheWeek , 
+    1, selectedWeek, moment(selectedWeek).day("Wednesday").format('L'), 'Lunch', 'Lunch', frTimes, frFinTimes,  Thrs, 'Lunch', dayoftheWeek ,
+    1, selectedWeek, moment(selectedWeek).day("Thursday").format('L'), 'Lunch', 'Lunch', frTimes, frFinTimes, Thrs, 'Lunch', dayoftheWeek ,
+    1, selectedWeek, moment(selectedWeek).day("Friday").format('L'), 'Lunch', 'Lunch', frTimes, frFinTimes, Thrs, 'Lunch', dayoftheWeek ],
+    (tx, results) => {
+      console.log('Results', results.rowsAffected);
+      if (results.rowsAffected > 0) {
+        Alert.alert(
+          'Sucess',
+          'Entry added succesfully to DB !!!',
+          [
+            {
+              text: 'Ok',
+              onPress: () =>
+              navigation.replace('Home', {
+                someParam: 'Param',
+              }),
+            },
+          ],
+          { cancelable: false }
+        );
+      } else alert('Error Entry unsuccesfull !!!');
+    }
+  ); 
+  //save()
+});
+
+}
+
+
+};
+
+
+ const save = async () => {
     try{
-      await AsyncStorage.setItem("MyWeekEnding", Week)  
+      await AsyncStorage.setItem("MyWeekEnding", Week)
       await AsyncStorage.setItem("MyWeek", currentDate)
       await AsyncStorage.setItem("MyDays", dayoftheWeek)
     }
@@ -280,8 +639,7 @@ let deleteEntry = () => {   //Function to delete an entry from the database
      let Week = await AsyncStorage.getItem("MyWeekEnding")
      let currentDate = await AsyncStorage.getItem("MyWeek")
      let dayoftheWeek = await AsyncStorage.getItem("MyDays")
-    
-     //Error checking to check for empty values
+
      if(Week !== null)
      {
       setWeek(Week)
@@ -341,7 +699,7 @@ let deleteEntry = () => {   //Function to delete an entry from the database
       </View>
 
         
-        <Picker style={{width: 135, height: 44, backgroundColor: '#f2fbff', borderColor: 'white', marginTop: -73, marginLeft: 190 }}
+        <Picker style={{width: 135, height: 44, backgroundColor: '#d8e0c3', marginTop: -73, marginLeft: 190, borderWidth: 2, borderColor: 'black', borderStyle: 'dashed' }}
                 selectedValue={dayoftheWeek}
                 itemStyle={{fontWeight: 'bold'}}
                 onValueChange=
@@ -426,7 +784,6 @@ let deleteEntry = () => {   //Function to delete an entry from the database
           show={showAlert}
           showProgress={false}
           title= {item.comment}
-          message="I have a message for you!"
           closeOnTouchOutside={true}
           closeOnHardwareBackPress={false}
           showCancelButton={true}
@@ -449,17 +806,142 @@ let deleteEntry = () => {   //Function to delete an entry from the database
     }}
     />
     
+    <View style={styles.centeredView}>
+<Modal
+  animationType="slide"
+  transparent={true}
+  visible={modalVisible}
+  onRequestClose={() => {
+    setModalVisible(!modalVisible);
+  }}
+  
+>
+<View style={styles.centeredView}>
+<View style={styles.modalView}>
+    <View style={styles.Weekarrow}>
+      <Text style={{fontWeight: 'bold',  color: '#091629'}}>Week Ending: {selectedWeek}{navigation.getParam('eow')}</Text>
+  <WeekSelector
+      dateContainerStyle={styles.date}
+      whitelistRange={[new Date(2021, 1, 9), new Date()]}
+      weekStartsOn={6}
+      onWeekChanged={saveStartingWeek}
+    />
+    </View>
+<Text>Lunch Entry</Text>
+
+<TimePickerModal
+  visible={visible}
+  onDismiss={onDismiss}
+  onConfirm={onConfirm}
+  hours={12} // default: current hours
+  minutes={14} // default: current minutes
+  label="Select time" // optional, default 'Select time'
+  cancelLabel="Cancel" // optional, default: 'Cancel'
+  confirmLabel="Ok" // optional, default: 'Ok'
+  animationType="fade" // optional, default is 'none'
+  locale={'en'} // optional, default is automically detected by your system
+/>
+<Button color="#09253a" style={styles.startTime} icon="clock" onPress={()=> setVisible(true)}>
+  Start: {frTimes}
+</Button>
+
+<TimePickerModal
+  visible={finishvisible}
+  onDismiss={onFinishDismiss}
+  onConfirm={onFinishConfirm}
+  hours={12} // default: current hours
+  minutes={14} // default: current minutes
+  label="Select time" // optional, default 'Select time'
+  cancelLabel="Cancel" // optional, default: 'Cancel'
+  confirmLabel="Ok" // optional, default: 'Ok'
+  animationType="fade" // optional, default is 'none'
+  locale={'en'} // optional, default is automically detected by your system
+/>
+<Button color="#09253a" style={styles.endTime} icon="clock" onPress={()=> setfinishVisible(true)}>
+  Finish: {frFinTimes}
+</Button>
+
+      
+<CheckBox style={styles.check}
+disabled={false}
+value={toggleCheckBox}
+onValueChange={setCheckBox}
+/>
+
+  
+
+    <Text style={styles.sameWeek}>Same for the week</Text>
+
     <View>
+              <Text style={{fontWeight: 'bold', color: '#091629', width: 250}}>
+                  Day of the Week 
+              </Text>
+             <Picker style={styles.datefive}
+              selectedValue={dayoftheWeek}
+              onValueChange=
+              {
+                  saveDayofWeek
+              }>
+                      <Picker.Item key="uniqueID9" label="Please Select a Day" value="" />
+                      <Picker.Item label="Monday" value="monday" />
+                      <Picker.Item label="Tuesday" value="tuesday" />
+                      <Picker.Item label="Wednesday" value="wednesday" />
+                      <Picker.Item label="Thursday" value="thursday" />
+                      <Picker.Item label="Friday" value="friday" />
+                      <Picker.Item label="Saturday" value="saturday" />
+                      <Picker.Item label="Sunday" value="sunday" />
+                     
+            </Picker>
+    </View>
+    
+
+    <Button color="#09253a" onPress={add_lunch} style={styles.addButton}>
+                Add Lunch
+        </Button>
+
+              <Pressable 
+                style={[styles.button, styles.buttonClose]}
+                onPress={() => setModalVisible(!modalVisible)}
+              >
+              <Text style={styles.textStyle}>Hide Modal</Text>
+                
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
+         <IconButton icon="food"  color={Colors.white} size={35} style={{marginLeft: 330, marginTop: -65, position: 'absolute', backgroundColor: '#091629', borderWidth: 3, borderColor: 'white'}} onPress={() => setModalVisible(true)}/>
+      </View>
+    
+    <View>
+    <IconButton icon="plus"  color={Colors.white} size={35} style={{marginLeft: 20, marginTop: -65, position: 'absolute', backgroundColor: '#e00000', borderWidth: 3, borderColor: 'white'}} onPress={pressHandler}/>
+     
+  </View>
+
+    {/* <View>
     <Button style icon="plus" onPress={pressHandler}>
             Add
+       </Button> 
+       
+       <Button style icon="food" onPress={deleteHandler}>
+            Lunch
        </Button>
-        </View>
+        </View> */}
+      
+     
+
        
   </View>
         
 );
             
    }
+    /*
+    <View style={{marginLeft: -200, marginTop: -550}}>
+              
+          
+            </View>
+           
+    */
    
    const styles = StyleSheet.create({
        container:{
@@ -580,23 +1062,78 @@ let deleteEntry = () => {   //Function to delete an entry from the database
             columnRowTxt: {
               width:"20%",
               textAlign:"center",
+            },
+            startTime:{
+              marginLeft: -200,
+              width: 140
+             },
+  
+             endTime:{
+              marginLeft: 200,
+              marginTop: -38,
+              width: 140
+             },
+
+            modalView: {
+              margin: 20,
+              backgroundColor: "white",
+              borderRadius: 20,
+              padding: 35,
+              alignItems: "center",
+              shadowColor: "#000",
+              shadowOffset: {
+                width: 0,
+                height: 2
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+              elevation: 5
+            },
+            button: {
+              backgroundColor: '#091629',
+              borderRadius: 20,
+              padding: 10,
+              elevation: 2
               
-            }
+            },
+            buttonOpen: {
+              backgroundColor: "#091629",
+            },
+            buttonClose: {
+              backgroundColor: "#2196F3",
+            },
+            sameWeek: {
+              marginTop: -25,
+              marginLeft: 20,
+              marginBottom: 20,
+              color: 'black'
+            },
+      
+            check: {
+              marginLeft: -150,
+               marginTop: 15,
+              color: 'black'
+            },
+      
+            textStyle: {
+              backgroundColor: '#091629',
+              color: "white",
+              fontWeight: "bold",
+              textAlign: "center"
+            },
+            modalText: {
+              marginBottom: 15,
+              textAlign: "center"
+            },
+
+            Weekarrow:{
+              height: 100,
+              width:350,
+              marginTop:-37,
+              marginBottom: 10,
+              backgroundColor: '#e1ecf2',
+              borderRadius: 20,
+              fontWeight: 'bold'
+             },
      });
      
-    /*<DataTable 
-          style={{ marginTop: 20 }}
-          contentContainerStyle={{ paddingHorizontal: 20 }}
-        data={tableItems}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={( item ) => entryTable(item)}
-        />
-        
-        <FlatList
-            style={{ marginTop: 20 }}
-            contentContainerStyle={{ paddingHorizontal: 20 }}
-            data={flatListItems}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item }) => listItemView(item)}  
-          />
-        */
