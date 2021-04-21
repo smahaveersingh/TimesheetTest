@@ -531,7 +531,7 @@ let deleteEntry = () => {
             [
               {
                 text: 'Ok',
-                onPress: Update()
+                onPress: SearchEntry()
               }
             ],
             { cancelable: false }
@@ -548,6 +548,38 @@ const setCheckBox = (newValue) => {
   setToggleCheckBox(newValue);
   calcTotalHrs();
 }
+
+const time_clash = () => {
+  db.transaction(function (tx) {
+    tx.executeSql(
+      'SELECT * FROM Timesheet WHERE ? < depart AND ? > arrival AND date=?',
+      [frTimes, frFinTimes ,currentDate],
+      (tx, results) => {
+        var temp = [];
+       var len = results.rows.length;
+       console.log('len', len);
+       if(len >= 0 ) {
+         for (let i = 0; i < results.rows.length; ++i) 
+         temp.push(results.rows.item(i));
+         if(len <= 0)
+         {
+            console.log("Time Slot Available " + temp);
+            add_lunch();
+         }
+         else{
+            console.log("Error")
+            alert('There is a timesheet conflict, select a different time');
+         }
+       } 
+       else {
+         alert('Cannot Search Entry!');
+       }
+      }
+    );
+  });
+}
+
+
 
 const add_lunch = () => {
   console.log( 1, selectedWeek, currentDate, 'Lunch', 'Lunch', frTimes, frFinTimes, Thrs, 'Lunch', dayoftheWeek);
@@ -568,10 +600,7 @@ const add_lunch = () => {
             [
               {
                 text: 'Ok',
-                onPress: () =>
-                navigation.replace('Home', {
-                  someParam: 'Param',
-                }),
+                onPress: SearchEntry()
               },
             ],
             { cancelable: false }
@@ -602,10 +631,7 @@ db.transaction(function (tx) {
           [
             {
               text: 'Ok',
-              onPress: () =>
-              navigation.replace('Home', {
-                someParam: 'Param',
-              }),
+              onPress: SearchEntry()
             },
           ],
           { cancelable: false }
@@ -665,7 +691,121 @@ db.transaction(function (tx) {
     load();
   },[])
 
+  const MondayModal = () => {
+    if(moment(currentDate).startOf('week').isoWeekday(1)) {
+      return (
+        <View style={styles.centeredView}>
+      
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(!modalVisible);
+          }}
+          
+        >
+        <View style={styles.centeredView}>
+        <View style={styles.modalView}>
+            <View style={styles.Weekarrow}>
+              <Text style={{fontWeight: 'bold',  color: '#091629'}}>Week Ending: {selectedWeek}{navigation.getParam('eow')}</Text>
+          <WeekSelector
+              dateContainerStyle={styles.date}
+              whitelistRange={[new Date(2021, 1, 9), new Date()]}
+              weekStartsOn={6}
+              onWeekChanged={saveStartingWeek}
+            />
+            </View>
+        <Text>Lunch Entry</Text>
+        
+        <TimePickerModal
+          visible={visible}
+          onDismiss={onDismiss}
+          onConfirm={onConfirm}
+          hours={12} // default: current hours
+          minutes={14} // default: current minutes
+          label="Select time" // optional, default 'Select time'
+          cancelLabel="Cancel" // optional, default: 'Cancel'
+          confirmLabel="Ok" // optional, default: 'Ok'
+          animationType="fade" // optional, default is 'none'
+          locale={'en'} // optional, default is automically detected by your system
+        />
+        <Button color="#09253a" style={styles.startTime} icon="clock" onPress={()=> setVisible(true)}>
+          Start: {frTimes}
+        </Button>
+        
+        <TimePickerModal
+          visible={finishvisible}
+          onDismiss={onFinishDismiss}
+          onConfirm={onFinishConfirm}
+          hours={12} // default: current hours
+          minutes={14} // default: current minutes
+          label="Select time" // optional, default 'Select time'
+          cancelLabel="Cancel" // optional, default: 'Cancel'
+          confirmLabel="Ok" // optional, default: 'Ok'
+          animationType="fade" // optional, default is 'none'
+          locale={'en'} // optional, default is automically detected by your system
+        />
+        <Button color="#09253a" style={styles.endTime} icon="clock" onPress={()=> setfinishVisible(true)}>
+          Finish: {frFinTimes}
+        </Button>
+        
+              
+        <CheckBox style={styles.check}
+        disabled={false}
+        value={toggleCheckBox}
+        onValueChange={setCheckBox}
+        />
+        
+          
+        
+            <Text style={styles.sameWeek}>Same for the week</Text>
+        
+            <View>
+                      <Text style={{fontWeight: 'bold', color: '#091629', width: 250}}>
+                          Day of the Week 
+                      </Text>
+                     <Picker style={styles.datefive}
+                      selectedValue={dayoftheWeek}
+                      onValueChange=
+                      {
+                          saveDayofWeek
+                      }>
+                              <Picker.Item key="uniqueID9" label="Please Select a Day" value="" />
+                              <Picker.Item label="Monday" value="monday" />
+                              <Picker.Item label="Tuesday" value="tuesday" />
+                              <Picker.Item label="Wednesday" value="wednesday" />
+                              <Picker.Item label="Thursday" value="thursday" />
+                              <Picker.Item label="Friday" value="friday" />
+                              <Picker.Item label="Saturday" value="saturday" />
+                              <Picker.Item label="Sunday" value="sunday" />
+                             
+                    </Picker>
+            </View>
+            
+        
+            <Button color="#09253a" onPress={time_clash} style={styles.addButton}>
+                        Add Lunch
+                </Button>
+        
+                      <Pressable 
+                        style={[styles.button, styles.buttonClose]}
+                        onPress={() => setModalVisible(!modalVisible)}
+                      >
+                      <Text style={styles.textStyle}>Hide Modal</Text>
+                        
+                      </Pressable>
+                    </View>
+                  </View>
+                </Modal>
+                 <IconButton icon="food"  color={Colors.white} size={35} style={{marginLeft: 330, marginTop: -65, position: 'absolute', backgroundColor: '#091629', borderWidth: 3, borderColor: 'white'}} onPress={() => setModalVisible(true)}/>
+              </View>
+            
+      );
+    }
+  }
 
+  
     
    
     return (
@@ -729,7 +869,7 @@ db.transaction(function (tx) {
     onScroll={
         Animated.event(
             [{nativeEvent: {contentOffset: {y: scrollY}}}],
-            [{ useNativeDriver: true}]
+            { useNativeDriver: true}
         )
     }
     keyExtractor={item => item.key}
@@ -772,7 +912,9 @@ db.transaction(function (tx) {
             shadowRadius: 20,
             opacity,
             transform: [{scale}]
-        }}>
+            
+        }}
+        >
             <TouchableOpacity onPress={popAlert}>
             <View>
             <Text style={{fontWeight: '700', fontSize: 24, color: '#091629'}}>{item.projNum}  </Text> 
@@ -800,13 +942,19 @@ db.transaction(function (tx) {
             deleteEntry(IDtimesheet);  
             hideAlert(); 
           }}
-        />
+        >
+
+          
+        </AwesomeAlert>
         </Animated.View>   
         
     }}
     />
+
+    {MondayModal}
     
     <View style={styles.centeredView}>
+      
 <Modal
   animationType="slide"
   transparent={true}
@@ -895,7 +1043,7 @@ onValueChange={setCheckBox}
     </View>
     
 
-    <Button color="#09253a" onPress={add_lunch} style={styles.addButton}>
+    <Button color="#09253a" onPress={time_clash} style={styles.addButton}>
                 Add Lunch
         </Button>
 
@@ -914,7 +1062,8 @@ onValueChange={setCheckBox}
     
     <View>
     <IconButton icon="plus"  color={Colors.white} size={35} style={{marginLeft: 20, marginTop: -65, position: 'absolute', backgroundColor: '#e00000', borderWidth: 3, borderColor: 'white'}} onPress={pressHandler}/>
-     
+    <IconButton icon="check"  color={Colors.black} size={35} style={{marginLeft: 170, marginTop: -65, position: 'absolute', backgroundColor: '#52f549', borderWidth: 3, borderColor: 'white'}} />
+
   </View>
 
     {/* <View>
