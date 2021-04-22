@@ -825,8 +825,10 @@ db.transaction(function (tx) {
         marginLeft: 8,
         borderWidth: 3,
         borderColor: 'white',
-        backgroundColor: '#e1ecf2',
+        backgroundColor: '#7affbd',
         borderRadius: 20,
+        borderWidth: 3,
+          borderColor: 'black',
       }}>
       
         <WeekSelector
@@ -839,7 +841,7 @@ db.transaction(function (tx) {
       </View>
 
         
-        <Picker style={{width: 135, height: 44, backgroundColor: '#d8e0c3', marginTop: -73, marginLeft: 190, borderWidth: 2, borderColor: 'black', borderStyle: 'dashed' }}
+        <Picker style={{width: 135, height: 44, backgroundColor: '#e1ecf2', marginTop: -73, marginLeft: 190, borderWidth: 2, borderColor: 'black', borderStyle: 'dashed' }}
                 selectedValue={dayoftheWeek}
                 itemStyle={{fontWeight: 'bold'}}
                 onValueChange=
@@ -1280,9 +1282,11 @@ onValueChange={setCheckBox}
               width:350,
               marginTop:-37,
               marginBottom: 10,
-              backgroundColor: '#e1ecf2',
+              backgroundColor: '#7affbd',
               borderRadius: 20,
-              fontWeight: 'bold'
+              fontWeight: 'bold',
+              borderWidth: 3,
+          borderColor: 'white',
              },
      });
      

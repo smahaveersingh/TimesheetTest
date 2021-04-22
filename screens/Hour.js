@@ -588,13 +588,14 @@ const time_clash = () => {
                   saveDayofWeek
               }>
                       <Picker.Item key="uniqueID9" label="Please Select a Day" value="" />
-                      <Picker.Item label="Monday" value="monday" />
-                      <Picker.Item label="Tuesday" value="tuesday" />
-                      <Picker.Item label="Wednesday" value="wednesday" />
-                      <Picker.Item label="Thursday" value="thursday" />
-                      <Picker.Item label="Friday" value="friday" />
-                      <Picker.Item label="Saturday" value="saturday" />
-                      <Picker.Item label="Sunday" value="sunday" />
+                      <Picker.Item label={'Monday' + ' ' +  moment(selectedWeek).day("Monday").format('MMM Do')} value="monday" />
+                        <Picker.Item label={'Tuesday' + ' ' +  moment(selectedWeek).day("Tuesday").format('MMM Do')} value="tuesday" />
+                        <Picker.Item label={'Wednesday' + ' ' +  moment(selectedWeek).day("Wednesday").format('MMM Do')} value="wednesday" />
+                        <Picker.Item label={'Thursday' + ' ' +  moment(selectedWeek).day("Thursday").format('MMM Do')} value="thursday" />
+                        <Picker.Item label={'Friday' + ' ' +  moment(selectedWeek).day("Friday").format('MMM Do')} value="friday" />
+                        <Picker.Item label={'Saturday' + ' ' +  moment(selectedWeek).day("Saturday").format('MMM Do')} value="saturday" />
+                        <Picker.Item label={'Sunday' + ' ' +  moment(selectedWeek).day("Sunday").format('MMM Do')} value="sunday" />
+                       
                      
             </Picker>
     </View>
@@ -768,7 +769,8 @@ style={styles.input}
             marginBottom: 30,
             backgroundColor: '#e1ecf2',
             borderRadius: 20,
-            fontWeight: 'bold'
+            fontWeight: 'bold',
+            
            },
 
            startTime:{
