@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { StyleSheet, Text, View, SafeAreaView, TextInput, Alert, Pressable, Modal} from 'react-native';
 import AsyncStorage from "@react-native-community/async-storage";
-import { Button } from 'react-native-paper';
+import { Button, IconButton, Card, Colors } from 'react-native-paper';
 import { TimePickerModal } from 'react-native-paper-dates';
 import { Picker } from '@react-native-picker/picker';
 import CheckBox from '@react-native-community/checkbox';
@@ -30,14 +30,11 @@ const db = DatabaseConnection.getConnection();
   const [Lvisible, setLVisible] = React.useState(false);
   const [Lfinishvisible, setLfinishVisible] = React.useState(false);
 
-  const [Hours, setHours] = React.useState('');
-  const [Minutes, setMinutes] = React.useState('');
+  const [Hours, setHours] = React.useState(selectDate.getHours());
+  const [Minutes, setMinutes] = React.useState(selectDate.getMinutes());
   const [finishHours, setfinishHours] = React.useState(selectDate.getHours());
   const [finishMinutes, setfinishMinutes] = React.useState(selectDate.getMinutes());
-  const [LunchHours, setLunchHours] = React.useState(selectDate.getHours());
-  const [LunchMinutes, setLunchMinutes] = React.useState(selectDate.getMinutes());
-  const [finishLunchHours, setfinishLunchHours] = React.useState(selectDate.getHours());
-  const [finishLunchMinutes, setfinishLunchMinutes] = React.useState(selectDate.getMinutes());
+  
   
   const [frTimes, setfrTimes] = React.useState('');
   const [frFinTimes, setfrFinTimes] = React.useState('');
@@ -95,81 +92,6 @@ const db = DatabaseConnection.getConnection();
     },
     [setfinishVisible]
   );
-
-  const onLConfirm = React.useCallback(
-    ({ hours, minutes }) => {
-      setLVisible(false);
-      console.log({ hours, minutes });
-      //setTime('{$hours}:${minutes}')
-      hours = setLunchHours(hours);
-      minutes = setLunchMinutes(minutes);
-    },
-    [setLVisible]
-  );
-
-  const onLFinishConfirm = React.useCallback(
-    ({ hours, minutes }) => {
-      setLfinishVisible(false);
-      console.log({ hours, minutes });
-      //setTime('{$hours}:${minutes}')
-      hours = setfinishLunchHours(hours);
-      minutes = setfinishLunchMinutes(minutes);
-    },
-    [setLfinishVisible]
-  );
-  
-
-
-  // const save = async () => {
-  //   try{
-  //     await AsyncStorage.setItem("MyWeekEnding", selectedWeek)
-  //     await AsyncStorage.setItem("MyWeek", currentDate)
-  //     //await AsyncStorage.setItem("MyDays", dayoftheWeek)
-  //     await AsyncStorage.setItem("MyProjNum", projNum)
-  //   }
-  //   catch (err)
-  //   {
-  //     alert(err)
-  //   }
-  // };
-
-  // const load = async () => {
-  //   try{
-  //    let selectedWeek = await AsyncStorage.getItem("MyWeekEnding")
-  //    let currentDate = await AsyncStorage.getItem("MyWeek")
-  //    //let dayoftheWeek = await AsyncStorage.getItem("MyDays")
-  //    let projNum = await AsyncStorage.getItem("MyProjNum")
-
-  //    if(selectedWeek !== null)
-  //    {
-  //     setselectedWeek(selectedWeek)
-  //    }
-     
-  //    if(currentDate !== null)
-  //    {
-  //     setCurrentDate(currentDate)
-  //    }
-
-  //   //  if(dayoftheWeek !== null)
-  //   //  {
-  //   //   setDayoftheWeek(dayoftheWeek)
-  //   //  }
-
-  //    if(projNum !== null)
-  //     {
-  //       setprojNum(projNum)
-  //     }
-
-  //   }
-  //   catch (err){
-  //     alert(err)
-  //   }
-  // };
-
-  // React.useEffect(() => {
-  //   load();
-  // },[])
-
  
 
   const renderUserNames = () => {
@@ -362,15 +284,20 @@ const time_clash = () => {
   };
 
   const add_lunch = () => {
-    console.log( selectedWeek, currentDate, projNum, description, frTimes, frFinTimes, Thrs, siteID, dayoftheWeek);
+    console.log( 1, selectedWeek, currentDate, 'Lunch', 'Lunch', frTimes, frFinTimes, Thrs, 'Lunch', dayoftheWeek);
+    
+    if (!dayoftheWeek) {
+      alert('Please select a day of the week');
+      return;
+    }
 
     if(toggleCheckBox == false)
-{
+  {
   
     db.transaction(function (tx) {
       tx.executeSql(
-        'INSERT INTO Timesheet(user_id, eow, date, projNum, comment , arrival, depart, totalHrs, siteID, dayoftheweek) VALUES (?,?,?,?,?,?,?,?,?,?)',
-        [1, selectedWeek, currentDate, 'Lunch', 'Lunch', frTimes, frFinTimes, Thrs, 'Lunch', dayoftheWeek],
+        'INSERT INTO Timesheet(user_id, eow, date, projNum, comment , arrival, depart, siteID, totalHrs, dayoftheweek) VALUES (?,?,?,?,?,?,?,?,?,?)',
+        [1, selectedWeek, currentDate, 'Lunch', 'Lunch', frTimes, frFinTimes, 'Lunch', Thrs, dayoftheWeek],
         (tx, results) => {
           console.log('Results', results.rowsAffected);
           if (results.rowsAffected > 0) {
@@ -394,17 +321,17 @@ const time_clash = () => {
       //save()
     });
   }
-
-  else
-{
+  
+  else if (toggleCheckBox == true)
+  {
   db.transaction(function (tx) {
     tx.executeSql(
       'INSERT INTO Timesheet(user_id, eow, date, projNum, comment , arrival, depart, totalHrs, siteID, dayoftheweek) VALUES (?,?,?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?,?,?)',
-      [1, selectedWeek, moment(selectedWeek).day("Monday").format('dddd, MMMM Do YYYY'), "Lunch", 'Lunch', frTimes, frFinTimes, Thrs, 'Lunch', dayoftheWeek , 
-      1, selectedWeek, moment(selectedWeek).day("Tuesday").format('dddd, MMMM Do YYYY'), 'Lunch', 'Lunch', frTimes, frFinTimes,  Thrs, 'Lunch', dayoftheWeek , 
-      1, selectedWeek, moment(selectedWeek).day("Wednesday").format('dddd, MMMM Do YYYY'), 'Lunch', 'Lunch', frTimes, frFinTimes,  Thrs, 'Lunch', dayoftheWeek ,
-      1, selectedWeek, moment(selectedWeek).day("Thursday").format('dddd, MMMM Do YYYY'), 'Lunch', 'Lunch', frTimes, frFinTimes, Thrs, 'Lunch', dayoftheWeek ,
-      1, selectedWeek, moment(selectedWeek).day("Friday").format('dddd, MMMM Do YYYY'), 'Lunch', 'Lunch', frTimes, frFinTimes, Thrs, 'Lunch', dayoftheWeek ],
+      [1, selectedWeek, moment(selectedWeek).day("Monday").format('L'), "Lunch", 'Lunch', frTimes, frFinTimes, Thrs, 'Lunch', dayoftheWeek , 
+      1, selectedWeek, moment(selectedWeek).day("Tuesday").format('L'), 'Lunch', 'Lunch', frTimes, frFinTimes,  Thrs, 'Lunch', dayoftheWeek , 
+      1, selectedWeek, moment(selectedWeek).day("Wednesday").format('L'), 'Lunch', 'Lunch', frTimes, frFinTimes,  Thrs, 'Lunch', dayoftheWeek ,
+      1, selectedWeek, moment(selectedWeek).day("Thursday").format('L'), 'Lunch', 'Lunch', frTimes, frFinTimes, Thrs, 'Lunch', dayoftheWeek ,
+      1, selectedWeek, moment(selectedWeek).day("Friday").format('L'), 'Lunch', 'Lunch', frTimes, frFinTimes, Thrs, 'Lunch', dayoftheWeek ],
       (tx, results) => {
         console.log('Results', results.rowsAffected);
         if (results.rowsAffected > 0) {
@@ -414,10 +341,7 @@ const time_clash = () => {
             [
               {
                 text: 'Ok',
-                onPress: () =>
-                navigation.replace('Home', {
-                  someParam: 'Param',
-                }),
+                onPress: SearchEntry()
               },
             ],
             { cancelable: false }
@@ -427,11 +351,39 @@ const time_clash = () => {
     ); 
     //save()
   });
- 
-}
+  
+  }
+  };
 
-
-};
+  const Lunch_time_clash = () => {
+    db.transaction(function (tx) {
+      tx.executeSql(
+        'SELECT * FROM Timesheet WHERE ? < depart AND ? > arrival AND date=?',
+        [frTimes, frFinTimes ,currentDate],
+        (tx, results) => {
+          var temp = [];
+         var len = results.rows.length;
+         console.log('len', len);
+         if(len >= 0 ) {
+           for (let i = 0; i < results.rows.length; ++i) 
+           temp.push(results.rows.item(i));
+           if(len <= 0)
+           {
+              console.log("Time Slot Available " + temp);
+              add_lunch();
+           }
+           else{
+              console.log("Error")
+              alert('There is a timesheet conflict, select a different time');
+           }
+         } 
+         else {
+           alert('Cannot Search Entry!');
+         }
+        }
+      );
+    });
+  }
 
   let options  = renderUserNames();
 
@@ -527,8 +479,19 @@ const time_clash = () => {
  return (
   <SafeAreaView style={styles.container}>
   <View>
-    <View style={styles.Weekarrow}>
-      <Text style={{fontWeight: 'bold',  color: '#091629'}}>Week Ending: {selectedWeek}{navigation.getParam('eow')}</Text>
+    <View style={{
+        marginTop:0,
+        height: 100,
+        width:380,
+        marginLeft: 8,
+        borderWidth: 3,
+        borderColor: 'white',
+        backgroundColor: '#34c0eb',
+        borderRadius: 20,
+        borderWidth: 3,
+          borderColor: 'black',
+      }}>
+      <Text style={{fontWeight: 'bold',  color: '#091629'}}>Week Ending: {moment(selectedWeek).format('dddd, MMMM Do')}{navigation.getParam('eow')}</Text>
   <WeekSelector
       dateContainerStyle={styles.date}
       whitelistRange={[new Date(2021, 1, 9), new Date()]}
@@ -543,7 +506,7 @@ const time_clash = () => {
   onDismiss={onDismiss}
   onConfirm={onConfirm}
   hours={12} // default: current hours
-  minutes={14} // default: current minutes
+  minutes={0} // default: current minutes
   label="Select time" // optional, default 'Select time'
   cancelLabel="Cancel" // optional, default: 'Cancel'
   confirmLabel="Ok" // optional, default: 'Ok'
@@ -561,7 +524,7 @@ const time_clash = () => {
   onDismiss={onFinishDismiss}
   onConfirm={onFinishConfirm}
   hours={12} // default: current hours
-  minutes={14} // default: current minutes
+  minutes={0} // default: current minutes
   label="Select time" // optional, default 'Select time'
   cancelLabel="Cancel" // optional, default: 'Cancel'
   confirmLabel="Ok" // optional, default: 'Ok'
@@ -669,6 +632,16 @@ style={styles.input}
 >
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
+            <View style={styles.Weekarrow}>
+    <IconButton icon="close"  color={Colors.white} size={29} style={{marginLeft: 322, marginTop: 30, position: 'absolute', backgroundColor: '#e00000', borderWidth: 3, borderColor: 'white'}} onPress={() => setModalVisible(!modalVisible)}/>
+      <Text style={{fontWeight: 'bold',  color: '#091629'}}>Week Ending: {selectedWeek}{navigation.getParam('eow')}</Text>
+  <WeekSelector
+      dateContainerStyle={styles.date}
+      whitelistRange={[new Date(2021, 1, 9), new Date()]}
+      weekStartsOn={6}
+      onWeekChanged={saveStartingWeek}
+    />
+    </View>
             <Text>Lunch Entry</Text>
         
             <TimePickerModal
@@ -676,7 +649,7 @@ style={styles.input}
   onDismiss={onDismiss}
   onConfirm={onConfirm}
   hours={12} // default: current hours
-  minutes={14} // default: current minutes
+  minutes={0} // default: current minutes
   label="Select time" // optional, default 'Select time'
   cancelLabel="Cancel" // optional, default: 'Cancel'
   confirmLabel="Ok" // optional, default: 'Ok'
@@ -684,7 +657,7 @@ style={styles.input}
   locale={'en'} // optional, default is automically detected by your system
 />
 <Button color="#09253a" style={styles.startTime} icon="clock" onPress={()=> setVisible(true)}>
-  Start: {Hours}:{Minutes}
+  Start: {frTimes}
 </Button>
 
 <TimePickerModal
@@ -692,7 +665,7 @@ style={styles.input}
   onDismiss={onFinishDismiss}
   onConfirm={onFinishConfirm}
   hours={12} // default: current hours
-  minutes={14} // default: current minutes
+  minutes={0} // default: current minutes
   label="Select time" // optional, default 'Select time'
   cancelLabel="Cancel" // optional, default: 'Cancel'
   confirmLabel="Ok" // optional, default: 'Ok'
@@ -700,7 +673,7 @@ style={styles.input}
   locale={'en'} // optional, default is automically detected by your system
 />
 <Button color="#09253a" style={styles.endTime} icon="clock" onPress={()=> setfinishVisible(true)}>
-  Finish: {finishHours}:{finishMinutes}
+  Finish: {frFinTimes}
 </Button>
 
       
@@ -714,9 +687,30 @@ style={styles.input}
 
     <Text style={styles.sameWeek}>Same for the week</Text>
 
+    <View>
+              <Text style={{fontWeight: 'bold', color: '#091629', width: 250}}>
+                  Day of the Week 
+              </Text>
+             <Picker style={styles.datefive}
+              selectedValue={dayoftheWeek}
+              onValueChange=
+              {
+                  saveDayofWeek
+              }>
+                      <Picker.Item key="uniqueID9" label="Please Select a Day" value="" />
+                      <Picker.Item label="Monday" value="monday" />
+                      <Picker.Item label="Tuesday" value="tuesday" />
+                      <Picker.Item label="Wednesday" value="wednesday" />
+                      <Picker.Item label="Thursday" value="thursday" />
+                      <Picker.Item label="Friday" value="friday" />
+                      <Picker.Item label="Saturday" value="saturday" />
+                      <Picker.Item label="Sunday" value="sunday" />
+                     
+            </Picker>
+    </View>
     
 
-    <Button color="#09253a" onPress={add_lunch} style={styles.addButton}>
+    <Button color="#09253a" onPress={Lunch_time_clash} style={styles.addButton}>
                 Add
         </Button>
 
@@ -730,12 +724,8 @@ style={styles.input}
             </View>
           </View>
         </Modal>
-        <Pressable
-          style={[styles.button, styles.buttonOpen]}
-          onPress={() => setModalVisible(true)}
-        >
-          <Text style={styles.textStyle}>Add Lunch</Text>
-        </Pressable>
+        
+        <IconButton icon="food"  color={Colors.white} size={35} style={{marginLeft: 320, marginTop: 15, position: 'absolute', backgroundColor: '#091629', borderWidth: 3, borderColor: 'white'}} onPress={() => setModalVisible(true)}/>
       </View>
         
 
@@ -764,13 +754,14 @@ style={styles.input}
            },
            Weekarrow:{
             height: 100,
-            width:370,
-            marginTop:-70,
-            marginBottom: 30,
-            backgroundColor: '#e1ecf2',
+            width:350,
+            marginTop:-37,
+            marginBottom: 10,
+            backgroundColor: '#7affbd',
             borderRadius: 20,
             fontWeight: 'bold',
-            
+            borderWidth: 3,
+          borderColor: 'white',
            },
 
            startTime:{

@@ -1,255 +1,213 @@
-import * as React from 'react';
+import { StatusBar } from 'expo-status-bar';
+import React from 'react';
 import {
-  StatusBar,
-  Dimensions,
-  TouchableOpacity,
-  Animated,
+  StyleSheet,
   Text,
   View,
   Image,
-  StyleSheet,
+  Dimensions,
+  Animated,
 } from 'react-native';
-import Constants from 'expo-constants';
-import { AntDesign } from '@expo/vector-icons';
+import { Button } from 'react-native-paper';
+import data from '../data';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
+const LOGO_WIDTH = 220;
+const LOGO_HEIGHT = 40;
+const DOT_SIZE = 40;
+const TICKER_HEIGHT = 40;
+const CIRCLE_SIZE = width * 0.6;
 
-const AnimatedAntDesign = Animated.createAnimatedComponent(AntDesign);
 
-const DURATION = 1000;
-const TEXT_DURATION = DURATION * 0.8;
-
-const quotes = [
-  {
-    quote:
-      '',
-    author: 'Professional Engineering Services',
-  },
-  {
-    quote: 'The fastest way to build an app.',
-    author: 'The Expo Team',
-  },
-];
-
-const Circle = ({ onPress, index, quotes, animatedValue, animatedValue2 }) => {
-  const { initialBgColor, nextBgColor, bgColor } = colors[index];
-  const inputRange = [0, 0.001, 0.5, 0.501, 1];
-  const backgroundColor = animatedValue2.interpolate({
-    inputRange,
-    outputRange: [
-      initialBgColor,
-      initialBgColor,
-      initialBgColor,
-      bgColor,
-      bgColor,
-    ],
-  });
-  const dotBgColor = animatedValue2.interpolate({
-    inputRange: [0, 0.001, 0.5, 0.501, 0.9, 1],
-    outputRange: [
-      bgColor,
-      bgColor,
-      bgColor,          
-      initialBgColor,
-      initialBgColor,
-      nextBgColor,
-    ],
-  });
-
+const Circle = ({ scrollX }) => {
   return (
-    <Animated.View
-      style={[
-        StyleSheet.absoluteFillObject,
-        styles.container,
-        { backgroundColor },
-      ]}
-    >
-      <Animated.View
-        style={[
-          styles.circle,
-          {
-            backgroundColor: dotBgColor,
-            transform: [
-              { perspective: 200 },
-              {
-                rotateY: animatedValue2.interpolate({
-                  inputRange: [0, 0.5, 1],
-                  outputRange: ['0deg', '-90deg', '-180deg'],
-                }),
-              },
-
-              {
-                scale: animatedValue2.interpolate({
-                  inputRange: [0, 0.5, 1],
-                  outputRange: [1, 6, 1],
-                }),
-              },
-
-              {
-                translateX: animatedValue2.interpolate({
-                  inputRange: [0, 0.5, 1],
-                  outputRange: [0, 50, 0],
-                }),
-              },
-            ],
-          },
-        ]}
-      >
-        <TouchableOpacity onPress={onPress}>
+    <View style={[StyleSheet.absoluteFillObject, styles.circleContainer]}>
+      {data.map(({ color }, index) => {
+        const inputRange = [
+          (index - 0.55) * width,
+          index * width,
+          (index + 0.55) * width,
+        ];
+        const scale = scrollX.interpolate({
+          inputRange,
+          outputRange: [0, 1, 0],
+          extrapolate: 'clamp',
+        });
+        const opacity = scrollX.interpolate({
+          inputRange,
+          outputRange: [0, 0.2, 0],
+        });
+        return (
           <Animated.View
+            key={index}
             style={[
-              styles.button,
+              styles.circle,
               {
-                transform: [
-                  {
-                    scale: animatedValue.interpolate({
-                      inputRange: [0, 0.05, 0.5, 1],
-                      outputRange: [1, 0, 0, 1],
-                      // extrapolate: "clamp"
-                    }),
-                  },
-                  {
-                    rotateY: animatedValue.interpolate({
-                      inputRange: [0, 0.5, 0.9, 1],
-                      outputRange: ['0deg', '180deg', '180deg', '180deg'],
-                    }),
-                  },
-                ],
-                opacity: animatedValue.interpolate({
-                  inputRange: [0, 0.05, 0.9, 1],
-                  outputRange: [1, 0, 0, 1],
-                }),
+                backgroundColor: color,
+                opacity,
+                transform: [{ scale }],
               },
             ]}
-          >
-            <AnimatedAntDesign name='arrowright' size={28} color={'white'} />
-          </Animated.View>
-        </TouchableOpacity>
-      </Animated.View>
-    </Animated.View>
+          />
+        );
+      })}
+    </View>
   );
 };
 
-/* 
-initialBgColor -> Big background of the element
-bgColor -> initial circle bg color that will be the next slide initial BG Color
-nextBgColor -> next circle bg color after we fully transition the circle and this will be small again
-prev bgColor === next initialBgColor
-prev nextBgColor === next bgColor
-*/
-
-const colors = [
-  {
-    initialBgColor: '#ffffff',
-    bgColor: '#fcba03',
-    nextBgColor: '#222',
-  },     
-  {
-    initialBgColor: 'midnightblue',
-    bgColor: 'turquoise',
-    nextBgColor: 'goldenrod',
-  },
-  {
-    initialBgColor: 'turquoise',
-    bgColor: 'goldenrod',
-    nextBgColor: '#222',
-  },
-];
-
-export default function Onboarding({navigation}) {
-  const animatedValue = React.useRef(new Animated.Value(0)).current;
-  const animatedValue2 = React.useRef(new Animated.Value(0)).current;
-  const sliderAnimatedValue = React.useRef(new Animated.Value(0)).current;
-  const inputRange = [...Array(quotes.length).keys()];
-  const [index, setIndex] = React.useState(0);
-
-  const animate = (i) =>
-    Animated.parallel([
-      Animated.timing(sliderAnimatedValue, {
-        toValue: i,
-        duration: TEXT_DURATION,
-        useNativeDriver: true,
-      }),
-      Animated.timing(animatedValue, {
-        toValue: 1,
-        duration: DURATION,
-        useNativeDriver: true,
-      }),
-      Animated.timing(animatedValue2, {
-        toValue: 1,
-        duration: DURATION,
-        useNativeDriver: false,
-      }),
-    ]);
-
-  const onPress = () => {
-    animatedValue.setValue(0);
-    animatedValue2.setValue(0);
-    animate((index) % colors.length).start();
-    setIndex((index) % colors.length);
-    navigation.navigate('Login');
-  };
-  
-
+const Ticker = ({ scrollX }) => {
+  const inputRange = [-width, 0, width];
+  const translateY = scrollX.interpolate({
+    inputRange,
+    outputRange: [TICKER_HEIGHT, 0, -TICKER_HEIGHT],
+  });
   return (
-    <View style={{ flex: 1, justifyContent: 'flex-start', paddingTop: 100 }}>
-      <StatusBar hidden />
-      <Circle
-        index={index}
-        onPress={onPress}
-        quotes={quotes}
-        animatedValue={animatedValue}
-        animatedValue2={animatedValue2}
-      />
-      <Animated.View
-        style={{
-          flexDirection: 'row',
-          transform: [
-            {
-              translateX: sliderAnimatedValue.interpolate({
-                inputRange,
-                outputRange: quotes.map((_, i) => -i * width * 2),
-              }),
-            },
-          ],
-          opacity: sliderAnimatedValue.interpolate({
-            inputRange: [...Array(quotes.length * 2 + 1).keys()].map(
-              (i) => i / 2
-            ),
-            outputRange: [...Array(quotes.length * 2 + 1).keys()].map((i) =>
-              i % 2 === 0 ? 1 : 0
-            ),
-          }),
-        }}
-      >
-        {quotes.slice(0, colors.length).map(({ quote, author }, i) => {
+    <View style={styles.tickerContainer}>
+      <Animated.View style={{ transform: [{ translateY }] }}>
+        {data.map(({ type }, index) => {
           return (
-            <View style={{ paddingRight: width, width: width * 2 }} key={i}>
-              <Text
-                style={[styles.paragraph, { color: colors[i].nextBgColor }]}
-              >
-                {quote}
-              </Text>
-              <Image source={require('../assets/obelisks.png')} style={{alignContent: 'center', alignItems: 'center', marginLeft:70, marginTop: 100, borderRadius: 20}}/>
-              <Text
-                style={[
-                  styles.paragraph,
-                  {
-                    color: colors[i].nextBgColor,
-                    fontSize: 23,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    opacity: 0.8,
-                    marginTop: 30
-                  },
-                ]}
-              >
-              {author}
-              </Text>
-            </View>
+            <Text key={index} style={styles.tickerText}>
+              {type}
+            </Text>
           );
         })}
       </Animated.View>
+    </View>
+  );
+};
+
+const Item = ({ imageUri, heading, description, index, scrollX }) => {
+  const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
+  const inputRangeOpacity = [
+    (index - 0.3) * width,
+    index * width,
+    (index + 0.3) * width,
+  ];
+  const scale = scrollX.interpolate({
+    inputRange,
+    outputRange: [0, 1, 0],
+  });
+  const translateXHeading = scrollX.interpolate({
+    inputRange,
+    outputRange: [width * 0.1, 0, -width * 0.1],
+  });
+  const translateXDescription = scrollX.interpolate({
+    inputRange,
+    outputRange: [width * 0.7, 0, -width * 0.7],
+  });
+  const opacity = scrollX.interpolate({
+    inputRange: inputRangeOpacity,
+    outputRange: [0, 1, 0],
+  });
+
+  return (
+    <View style={styles.itemStyle}>
+      <Animated.Image
+        source={imageUri}
+        style={[
+          styles.imageStyle,
+          {
+            transform: [{ scale }],
+          },
+        ]}
+      />
+      <View style={styles.textContainer}>
+        <Animated.Text
+          style={[
+            styles.heading,
+            {
+              opacity,
+              transform: [{ translateX: translateXHeading }],
+            },
+          ]}
+        >
+          {heading}
+        </Animated.Text>
+        <Animated.Text
+          style={[
+            styles.description,
+            {
+              opacity,
+              transform: [
+                {
+                  translateX: translateXDescription,
+                },
+              ],
+            },
+          ]}
+        >
+          {description}
+        </Animated.Text>
+      </View>
+    </View>
+  );
+};
+
+const Pagination = ({ scrollX }) => {
+  const inputRange = [-width, 0, width];
+  const translateX = scrollX.interpolate({
+    inputRange,
+    outputRange: [-DOT_SIZE, 0, DOT_SIZE],
+  });
+  return (
+    <View style={[styles.pagination]}>
+      <Animated.View
+        style={[
+          styles.paginationIndicator,
+          {
+            position: 'absolute',
+            // backgroundColor: 'red',
+            transform: [{ translateX }],
+          },
+        ]}
+      />
+      {data.map((item) => {
+        return (
+          <View key={item.key} style={styles.paginationDotContainer}>
+            <View
+              style={[styles.paginationDot, { backgroundColor: item.color }]}
+            />
+          </View>
+        );
+      })}
+    </View>
+  );
+};
+
+export default function Onboarding({ navigation }) {
+  const scrollX = React.useRef(new Animated.Value(0)).current;
+
+  const pressHandler = () => 
+ {
+   navigation.navigate('Login')
+ }
+
+  return (
+    <View style={styles.container}>
+      <StatusBar style='auto' hidden />
+      <Circle scrollX={scrollX} />
+      <Animated.FlatList
+        keyExtractor={(item) => item.key}
+        data={data}
+        renderItem={({ item, index }) => (
+          <Item {...item} index={index} scrollX={scrollX} />
+        )}
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        horizontal
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+          { useNativeDriver: true }
+        )}
+        scrollEventThrottle={16}
+      />
+      <Image
+        style={styles.logo}
+        source={require('../assets/obelisks.png')}
+      />
+      <Pagination scrollX={scrollX} />
+      <Ticker scrollX={scrollX} />
+      <Button onPress={pressHandler}>skip</Button>
     </View>
   );
 }
@@ -257,30 +215,104 @@ export default function Onboarding({navigation}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-end',
+  },
+  itemStyle: {
+    width,
+    height,
     alignItems: 'center',
-    paddingTop: Constants.statusBarHeight,
-    padding: 8,
-    paddingBottom: 50,
-  },
-  paragraph: {
-    margin: 12,
-    fontSize: 24,
-    // fontWeight: 'bold',
-    textAlign: 'center',
-    color: 'white',
-  },
-  button: {
-    height: 100,
-    width: 100,
-    borderRadius: 50,
     justifyContent: 'center',
+  },
+  imageStyle: {
+    width: width * 0.75,
+    height: width * 0.75,
+    resizeMode: 'contain',
+    flex: 1,
+  },
+  textContainer: {
+    alignItems: 'flex-start',
+    alignSelf: 'flex-end',
+    flex: 0.5,
+  },
+  heading: {
+    color: '#444',
+    textTransform: 'uppercase',
+    fontSize: 24,
+    fontWeight: '800',
+    letterSpacing: 2,
+    marginBottom: 5,
+  },
+  description: {
+    color: '#ccc',
+    fontWeight: '600',
+    textAlign: 'left',
+    width: width * 0.75,
+    marginRight: 10,
+    fontSize: 16,
+    lineHeight: 16 * 1.5,
+  },
+  logo: {
+    opacity: 0.9,
+    height: LOGO_HEIGHT,
+    width: LOGO_WIDTH,
+    resizeMode: 'contain',
+    position: 'absolute',
+    left: 10,
+    bottom: 10,
+    transform: [
+      { translateX: -LOGO_WIDTH / 2 },
+      { translateY: -LOGO_HEIGHT / 2 },
+      { rotateZ: '-90deg' },
+      { translateX: LOGO_WIDTH / 2 },
+      { translateY: LOGO_HEIGHT / 2 },
+    ],
+  },
+  pagination: {
+    position: 'absolute',
+    right: 20,
+    bottom: 40,
+    flexDirection: 'row',
+    height: DOT_SIZE,
+  },
+  paginationDot: {
+    width: DOT_SIZE * 0.3,
+    height: DOT_SIZE * 0.3,
+    borderRadius: DOT_SIZE * 0.15,
+  },
+  paginationDotContainer: {
+    width: DOT_SIZE,
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  paginationIndicator: {
+    width: DOT_SIZE,
+    height: DOT_SIZE,
+    borderRadius: DOT_SIZE / 2,
+    borderWidth: 2,
+    borderColor: '#ddd',
+  },
+  tickerContainer: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    overflow: 'hidden',
+    height: TICKER_HEIGHT,
+  },
+  tickerText: {
+    fontSize: TICKER_HEIGHT,
+    lineHeight: TICKER_HEIGHT,
+    textTransform: 'uppercase',
+    fontWeight: '800',
+  },
+
+  circleContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   circle: {
-    backgroundColor: 'turquoise',
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: CIRCLE_SIZE,
+    height: CIRCLE_SIZE,
+    borderRadius: CIRCLE_SIZE / 2,
+    position: 'absolute',
+    top: '15%',
   },
 });

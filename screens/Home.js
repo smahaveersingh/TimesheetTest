@@ -344,7 +344,7 @@ export default function Home ({ navigation }) {
       save();
       db.transaction((tx) => {
      tx.executeSql(
-      'SELECT * FROM Timesheet WHERE date = ?',
+      'SELECT * FROM Timesheet WHERE date = ? ORDER BY arrival',
       [currentDate],
        (tx, results) => {
          //var temp = [];
@@ -581,8 +581,6 @@ db.transaction(function (tx) {
 });
 
 }
-
-
 };
 
 
@@ -646,7 +644,7 @@ db.transaction(function (tx) {
    },
     {
       text: 'Edit',
-      backgroundColor: 'blue',
+      backgroundColor: '#eed202',
       underlayColor: 'rgba(0, 0, 0, 1, 0.6)',
       onPress: () => { onEdit(item) }
    }
@@ -672,7 +670,7 @@ db.transaction(function (tx) {
         marginLeft: 8,
         borderWidth: 3,
         borderColor: 'white',
-        backgroundColor: '#7affbd',
+        backgroundColor: '#34c0eb',
         borderRadius: 20,
         borderWidth: 3,
           borderColor: 'black',
@@ -753,7 +751,10 @@ db.transaction(function (tx) {
             outputRange: [1, 1, 1, 0]
         })
 
-        return <Animated.View style={{flexDirection: 'row', padding: SPACING, marginBottom: SPACING, backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 12,
+        return  <Swipeout right={swipeBtns(item)}
+            autoClose='true'
+            backgroundColor= 'transparent'>
+            <Animated.View style={{flexDirection: 'row', padding: SPACING, marginBottom: SPACING, backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 12,
             shadowColor: '#000',
             shadowOffset: {
                 width: 0,
@@ -766,17 +767,14 @@ db.transaction(function (tx) {
             
         }}
         >
-            <Swipeout right={swipeBtns(item)}
-            autoClose='true'
-            backgroundColor= 'transparent'>
+           
             <View>
             <Text style={{fontWeight: '700', fontSize: 24, color: '#091629'}}>{item.projNum}  </Text> 
             <Text style={{opacity: .7, fontSize: 15}}>  {item.projNum} - {item.siteID}</Text>
             <Text style={{fontWeight: '700', fontSize: 14, color: '#091629'}}>  {item.arrival} - {item.depart}     Duration : {item.totalHrs}</Text>  
         </View>        
-        </Swipeout>
         </Animated.View>   
-        
+        </Swipeout>
     }}
     
     />
@@ -886,8 +884,8 @@ onValueChange={setCheckBox}
       </View>
     
     <View>
-    <IconButton icon="plus"  color={Colors.white} size={35} style={{marginLeft: 20, marginTop: -65, position: 'absolute', backgroundColor: '#e00000', borderWidth: 3, borderColor: 'white'}} onPress={pressHandler}/>
-    <IconButton icon="check"  color={Colors.black} size={35} style={{marginLeft: 170, marginTop: -65, position: 'absolute', backgroundColor: '#52f549', borderWidth: 3, borderColor: 'white'}} />
+    <IconButton icon="plus"  color={Colors.white} size={35} style={{marginLeft: 20, marginTop: -65, position: 'absolute', backgroundColor: '#34c0eb', borderWidth: 3, borderColor: 'white'}} onPress={pressHandler}/>
+    <IconButton icon="check"  color={Colors.white} size={35} style={{marginLeft: 170, marginTop: -65, position: 'absolute', backgroundColor: '#52f549', borderWidth: 3, borderColor: 'white'}} />
 
   </View>
 
