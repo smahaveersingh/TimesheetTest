@@ -775,30 +775,6 @@ db.transaction(function (tx) {
             <Text style={{fontWeight: '700', fontSize: 14, color: '#091629'}}>  {item.arrival} - {item.depart}     Duration : {item.totalHrs}</Text>  
         </View>        
         </Swipeout>
-        <AwesomeAlert
-          show={showAlert}
-          showProgress={false}
-          title= {    <IconButton icon="close"  color={Colors.black} size={35} style={{marginLeft: 170, marginTop: -65, position: 'absolute', backgroundColor: '#52f549', borderWidth: 3, borderColor: 'white'}} onPress={hideAlert}/>
-        }
-          message={'ID: ' + item.id_timesheet}
-          closeOnTouchOutside={true}
-          closeOnHardwareBackPress={false}
-          showCancelButton={true}
-          showConfirmButton={true}
-          confirmText="Delete"
-          cancelText="Edit"
-          confirmButtonColor="#DD6B55"
-          onCancelPressed={() => {
-            hideAlert(item)
-            //navigation.navigate('EditSheet', item)
-          }}
-          onConfirmPressed={() => {
-            console.log("Timesheet ID: " + IDtimesheet)  
-            deleteEntry(IDtimesheet);  
-            hideAlert(); 
-          }}
-        >  
-        </AwesomeAlert>
         </Animated.View>   
         
     }}
