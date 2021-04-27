@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '800',
     letterSpacing: 2,
-    marginBottom: 5,
+    marginBottom: -5,
   },
   description: {
     color: '#ccc',

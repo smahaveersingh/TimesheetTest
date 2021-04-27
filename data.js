@@ -1,14 +1,14 @@
 export default [
     {
-      type: 'Who are we ',
+      type: ' ',
       imageUri: require('./assets/obelisks.png'),
-      heading: 'Vibrant colors',
-      description: 'Four on-trend colorways to seamlessly suit your style.',
+      heading: 'Who we are',
+      description: 'We are an internationally competitive professional engineering services business focusing on bringing a fresh and innovative approach as a leading solutions service provider.',
       key: 'first',
       color: '#9dcdfa',
     },
     {
-      type: 'Pampas',
+      type: 'Expenses',
       imageUri: require('./assets/Sync.png'),
       heading: 'Redefined sound',
       description: 'A bold statement tuned to perfection.',
@@ -16,7 +16,7 @@ export default [
       color: '#db9efa',
     },
     {
-      type: 'Humlan P',
+      type: 'Timesheet',
       imageUri: require('./assets/List.png'),
       heading: 'Great quality',
       description:
@@ -25,8 +25,8 @@ export default [
       color: '#999',
     },
     {
-        type: 'Humlan P',
-        imageUri: require('./assets/List.png'),
+        type: 'All in one app',
+        imageUri: require('./assets/confirmed.png'),
         heading: 'Great quality',
         description:
           'An Urbanears classic! Listen-all-day fit. Striking the perfect balance of effortless technology',
