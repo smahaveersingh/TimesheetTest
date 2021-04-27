@@ -8,7 +8,7 @@ import WeekSelector from 'react-native-week-selector';
 import { MaterialCommunityIcons, AntDesign } from '@expo/vector-icons';
 import CheckBox from '@react-native-community/checkbox';
 import _ from "lodash";
-import Dialog from "react-native-dialog";
+import Swipeout from 'react-native-swipeout';
 import { DatabaseConnection } from '../components/database-connection';
 import { colors } from 'react-native-elements';
 import AwesomeAlert from 'react-native-awesome-alerts';
@@ -138,6 +138,7 @@ export default function Home ({ navigation }) {
        calcTotalHrs();
        add_lunch();
      }
+     
      
       
     
@@ -636,6 +637,21 @@ db.transaction(function (tx) {
     navigation.navigate('EditSheet', item)
   }
 
+  let swipeBtns = (item) => [
+    {
+      text: 'Delete',
+      backgroundColor: 'red',
+      underlayColor: 'rgba(0, 0, 0, 1, 0.6)',
+      onPress: () => {  onDelte(item.id_timesheet) }
+   },
+    {
+      text: 'Edit',
+      backgroundColor: 'blue',
+      underlayColor: 'rgba(0, 0, 0, 1, 0.6)',
+      onPress: () => { onEdit(item) }
+   }
+  ];
+
   
   
    
@@ -750,24 +766,15 @@ db.transaction(function (tx) {
             
         }}
         >
-            
+            <Swipeout right={swipeBtns(item)}
+            autoClose='true'
+            backgroundColor= 'transparent'>
             <View>
             <Text style={{fontWeight: '700', fontSize: 24, color: '#091629'}}>{item.projNum}  </Text> 
             <Text style={{opacity: .7, fontSize: 15}}>  {item.projNum} - {item.siteID}</Text>
             <Text style={{fontWeight: '700', fontSize: 14, color: '#091629'}}>  {item.arrival} - {item.depart}     Duration : {item.totalHrs}</Text>  
-        </View>
-
-        <TouchableOpacity
-        onPress={() => onDelte(item.id_timesheet)}
-        >
-          <Text style={styles.delstyle}>Delete</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-        onPress={() => onEdit(item)}>
-          <Text style={styles.edtbtn}>Edit</Text>
-        </TouchableOpacity>
-        
+        </View>        
+        </Swipeout>
         <AwesomeAlert
           show={showAlert}
           showProgress={false}
