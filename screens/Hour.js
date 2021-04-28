@@ -308,9 +308,7 @@ const time_clash = () => {
                 {
                   text: 'Ok',
                   onPress: () =>
-                  navigation.replace('Home', {
-                    someParam: 'Param',
-                  }),
+                  navigation.navigate('Home'),                 
                 },
               ],
               { cancelable: false }

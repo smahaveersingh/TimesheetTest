@@ -207,7 +207,7 @@ export default function Onboarding({ navigation }) {
       />
       <Pagination scrollX={scrollX} />
       <Ticker scrollX={scrollX} />
-      <Button onPress={pressHandler}>skip</Button>
+      <Button onPress={pressHandler}>Continue</Button>
     </View>
   );
 }

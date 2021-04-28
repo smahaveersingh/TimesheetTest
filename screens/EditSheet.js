@@ -316,20 +316,18 @@ var t1 = [moment(frTimes).format('HH:mm'), moment(frTimes).format('HH:mm')]
           console.log('Results', results.rowsAffected);
           if (results.rowsAffected > 0) {
             Alert.alert(
-              'Sucesso',
-              'Usuário atualizado com sucesso !!',
+              'Sucess',
+              'Entry edited Succesfully!!!',
               [
                 {
                   text: 'Ok',
                   onPress: () =>
-                  navigation.replace('Home', {
-                    someParam: 'Param',
-                  }),
+                  navigation.navigate('Home'), 
                 },
               ],
               { cancelable: false }
             );
-          } else alert('Erro ao atualizar o usuário');
+          } else alert('Error editing the entry!');
         }
       );
     });

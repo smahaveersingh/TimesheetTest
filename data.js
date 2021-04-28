@@ -24,15 +24,6 @@ export default [
       key: 'third',
       color: '#999',
     },
-    {
-        type: 'All in one app',
-        imageUri: require('./assets/confirmed.png'),
-        heading: 'Great quality',
-        description:
-          'An Urbanears classic! Listen-all-day fit. Striking the perfect balance of effortless technology',
-        key: 'fourth',
-        color: '#999',
-        
-    },
+    
   ];
   
