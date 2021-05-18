@@ -10,6 +10,9 @@ import {
 } from 'react-native';
 import { Button } from 'react-native-paper';
 import data from '../data';
+import { DatabaseConnection } from '../components/database-connection';
+
+const db = DatabaseConnection.getConnection();
 
 const { width, height } = Dimensions.get('window');
 const LOGO_WIDTH = 220;
@@ -175,6 +178,27 @@ const Pagination = ({ scrollX }) => {
 };
 
 export default function Onboarding({ navigation }) {
+
+  React.useEffect(() => {
+    db.transaction(function (txn) {
+      txn.executeSql(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='Timesheet'",
+        [],
+        function (tx, res) {
+          console.log('item:', res.rows.length);
+          if (res.rows.length == 0) {
+            txn.executeSql('DROP TABLE IF EXISTS Timesheet', []);
+            txn.executeSql(
+              'CREATE TABLE IF NOT EXISTS Timesheet(id_timesheet INTEGER PRIMARY KEY AUTOINCREMENT, user_id BIGINT(20), eow DATE, date DATETIME, projNum VARCHAR(30), comment VARCHAR(250), arrival TIME, depart TIME, totalHrs FLOAT, siteID VARCHAR(45), dayoftheweek VARCHAR(45))',
+              [],
+            ); 
+          }
+        }
+      );
+    });
+  }, []);
+  
+  
   const scrollX = React.useRef(new Animated.Value(0)).current;
 
   const pressHandler = () => 

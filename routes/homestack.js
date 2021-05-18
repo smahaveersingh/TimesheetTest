@@ -21,18 +21,21 @@ const screens = {
 },
   Login: {
     screen: Login,
-      navigationOptions:
-      {
-        title: null,
-      }
+    navigationOptions:
+    {
+      title: null,
+      header: () => null
+    }
 },
 
 ListView:
     {
-      screen: ListView,
+      screen: Login,
       navigationOptions:
       {
         title: null,
+        header: () => null,
+        headerLeft: () => null
       }
 },
 
@@ -63,7 +66,8 @@ EditSheet:
     navigationOptions:({ navigation }) => {
     return {
       headerTitle: () => <Header navigation={navigation} title='Edit' />,
-      headerLeft: () => null
+      headerLeft: () => null,
+      
           }
     }
 },

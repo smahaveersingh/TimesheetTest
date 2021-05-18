@@ -41,6 +41,9 @@ export default function Home ({ navigation }) {
   const [selectedWeek, setselectedWeek] = React.useState(moment().day(5).format("L"));
   const [Thrs, setThrs] = React.useState('');
   const [selectedItem, setSelectedItem] = React.useState('');
+
+  
+
       const onDismiss = React.useCallback(() => {    // function for closing Start TimePicker
         setVisible(false)
       }, [setVisible])
@@ -192,7 +195,11 @@ export default function Home ({ navigation }) {
 
     const deleteHandler = () => 
     {
-      navigation.navigate('ViewEntry')
+      if (moment(Week).day("Friday").format('MMM Do') == moment().format('MMM Do') || moment(Week).day("Monday").format('MMM Do') == moment().format('MMM Do')) {
+        navigation.navigate('ViewEntry');
+      } else {
+        alert('Its not Friday or Monday Yet!');
+      }
     }
 
     const saveDayofWeek = (itemValue, itemIndex) => {
@@ -487,6 +494,42 @@ const setCheckBox = (newValue) => {
   calcTotalHrs();
 }
 
+const sow_lunch = () => {
+  if (moment(Week).day("Tuesday").format('MMM Do') == moment().format('MMM Do')) {
+    setModalVisible(true);
+  } else {
+    setModalVisible(false);
+  }
+}
+
+const find_lunch = () => {
+  db.transaction(function (tx) {
+    tx.executeSql(
+      'SELECT * FROM Timesheet WHERE projNum = "Lunch"',
+      [],
+      (tx, results) => {
+        var temp = [];
+       var len = results.rows.length;
+       console.log('len', len);
+       if(len > 0 ) {
+         for (let i = 0; i < results.rows.length; ++i) 
+         temp.push(results.rows.item(i));
+         if(len <= 0)
+         {
+            console.log('Lunch check!')
+         }
+         else{
+            console.log("There is a Lunch already");
+         }
+       } 
+       else {
+        sow_lunch();
+       }
+      }
+    );
+  });
+}
+
 const time_clash = () => {
   db.transaction(function (tx) {
     tx.executeSql(
@@ -517,6 +560,11 @@ const time_clash = () => {
   });
 }
 
+const hide_LModal = () => {
+  SearchEntry();
+  setModalVisible(false);
+}
+
 
 
 const add_lunch = () => {
@@ -538,7 +586,7 @@ const add_lunch = () => {
             [
               {
                 text: 'Ok',
-                onPress: SearchEntry()
+                onPress: hide_LModal,
               },
             ],
             { cancelable: false }
@@ -600,8 +648,7 @@ db.transaction(function (tx) {
     try{
      let Week = await AsyncStorage.getItem("MyWeekEnding")
      let currentDate = await AsyncStorage.getItem("MyWeek")
-     let dayoftheWeek = await AsyncStorage.getItem("MyDays")
-
+    
      if(Week !== null)
      {
       setWeek(Week)
@@ -610,11 +657,6 @@ db.transaction(function (tx) {
      if(currentDate !== null)
      {
       setCurrentDate(currentDate)
-     }
-
-     if(dayoftheWeek !== null)
-     {
-      setDayoftheWeek(dayoftheWeek)
      }
 
     }
@@ -659,6 +701,7 @@ db.transaction(function (tx) {
     source={{uri: BG_IMG}}
     style={StyleSheet.absoluteFillObject}
     blurRadius={80}
+    onLoad={find_lunch}
     />
 <Text style={{marginLeft: 18, marginTop: 20, fontSize: 16, color: '#091629', fontWeight: 'bold'}}>Week Ending                     Day of the Week</Text>
 
@@ -778,9 +821,7 @@ db.transaction(function (tx) {
     }}
     
     />
-
  
-    
     <View style={styles.centeredView}>
       
 <Modal
@@ -790,7 +831,6 @@ db.transaction(function (tx) {
   onRequestClose={() => {
     setModalVisible(!modalVisible);
   }}
-  
 >
 <View style={styles.centeredView}>
 <View style={styles.modalView}>
@@ -885,7 +925,7 @@ onValueChange={setCheckBox}
     
     <View>
     <IconButton icon="plus"  color={Colors.white} size={35} style={{marginLeft: 20, marginTop: -65, position: 'absolute', backgroundColor: '#34c0eb', borderWidth: 3, borderColor: 'white'}} onPress={pressHandler}/>
-    <IconButton icon="check"  color={Colors.white} size={35} style={{marginLeft: 170, marginTop: -65, position: 'absolute', backgroundColor: '#52f549', borderWidth: 3, borderColor: 'white'}} />
+    <IconButton icon="check"  color={Colors.white} size={35} style={{marginLeft: 170, marginTop: -65, position: 'absolute', backgroundColor: '#52f549', borderWidth: 3, borderColor: 'white'}} onPress={deleteHandler}/>
 
   </View>
 

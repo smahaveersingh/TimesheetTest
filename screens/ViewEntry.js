@@ -1,60 +1,34 @@
-import React, { useState } from 'react';
-import { View, Alert, SafeAreaView } from 'react-native';
-import Mytextinput from '../components/MyTextInput';
-import Mybutton from '../components/Mybutton';
-import { DatabaseConnection } from '../components/database-connection';
+import React, {useState,useEffect} from 'react';
+import {View, StyleSheet} from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+//import axios from axios
 
-const db = DatabaseConnection.getConnection();
+export default function DeleteUser ({ navigation })  {
+    const [values, setValues] = React.useState([]);
+    const [selectedValue, setSelectedValue] = useState(null);
 
-const DeleteUser = ({ navigation }) => {
-  let [inputUserId, setInputUserId] = useState('');
+    useEffect(() => {
+        fetch('https://aboutreact.herokuapp.com/demosearchables.php')
+        .then(response => response.json())
+        .then(responseJson => {
+            setValues(responseJson.results)
+        })
+        .catch((error) => {
+            console.error(error);
+          });
+      }, []);
 
-  let deleteUser = () => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'DELETE FROM  Timesheet where user_id=?',
-        [inputUserId],
-        (tx, results) => {
-          console.log('Results', results.rowsAffected);
-          if (results.rowsAffected > 0) {
-            Alert.alert(
-              'Sucess',
-              'Entry removed from Dataase',
-              [
-                {
-                  text: 'Ok',
-                  onPress: () =>
-                  navigation.replace('Home', {
-                    someParam: 'Param',
-                  }),
-                },
-              ],
-              { cancelable: false }
-            );
-          } else {
-            alert('Entry could not be deleted');
-          }
-        }
-      );
-    });
-  };
-
-  return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <View style={{ flex: 1, backgroundColor: 'white' }}>
-        <View style={{ flex: 1 }}>
-          <Mytextinput
-            placeholder="Enter the user Id you wish to delete"
-            onChangeText={
-              (inputUserId) => setInputUserId(inputUserId)
-            }
-            style={{ padding: 10 }}
-          />
-          <Mybutton title="Delete" customClick={deleteUser} />
-        </View>
-      </View>
-    </SafeAreaView>
-  );
-};
-
-export default DeleteUser;
+    return (        
+        <View style={{flex: 1,backgroundColor:'white'}}>
+                <Picker
+                    selectedValue={selectedValue ? selectedValue.id : null}
+                    style={{ width: '100%' }}
+                    onValueChange={(itemValue) => setSelectedValue({ id: itemValue })}>
+                    { values.map((value, i) => {
+                        return <Picker.Item key={i} value={value.id} label={value.name} />
+                    })}
+                </Picker>
+               </View> 
+        
+    )
+}
