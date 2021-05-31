@@ -1,10 +1,11 @@
 import * as React from 'react';
-import { StyleSheet, View, Text, Image, StatusBar, Animated, TouchableOpacity, Alert, Pressable, Modal} from 'react-native';
+import { StyleSheet, View, Text, Image, StatusBar, Animated, TouchableOpacity, Alert, Pressable, Modal, ImageBackground} from 'react-native';
 import { Button, IconButton, Card, Colors } from 'react-native-paper';
 import { TimePickerModal } from 'react-native-paper-dates';
 import { Picker } from '@react-native-picker/picker';
 import moment from 'moment';
 import WeekSelector from 'react-native-week-selector';
+import Swipeout from 'react-native-swipeout';
 import { MaterialCommunityIcons, AntDesign } from '@expo/vector-icons';
 import CheckBox from '@react-native-community/checkbox';
 import _ from "lodash";
@@ -51,6 +52,7 @@ export default function Home ({ navigation }) {
   const [totalHrsforday, settotalHrsforday] = React.useState([]);
   const [selectedWeek, setselectedWeek] = React.useState(moment().day(5).format("L"));
   const [Thrs, setThrs] = React.useState('');
+  const [selectedItem, setSelectedItem] = React.useState('');
 
   var timeList = [];
   /*_onPressButton  = () => {
@@ -212,12 +214,12 @@ export default function Home ({ navigation }) {
      
       
     
-      const BG_IMG = '#fff';
+     const BG_IMG = 'https://www.solidbackgrounds.com/images/950x350/950x350-snow-solid-color-background.jpg';
 
       const SPACING = 20;
-      const AVATAR_SIZE = 30;
+      const AVATAR_SIZE = 10;
       const ITEM_SIZE = AVATAR_SIZE + SPACING *3;
-      const scrollY = React.useRef(new Animated.Value(0)).current;         
+      const scrollY = React.useRef(new Animated.Value(10)).current;         
 
 
       const colors = {
@@ -665,25 +667,50 @@ db.transaction(function (tx) {
     load();
   },[])
 
+  const onDelte = (IDtimesheet) => {
+    deleteEntry(IDtimesheet);
+  }
+
+  const onEdit = (item) => {
+    navigation.navigate('EditSheet', item)
+  }
+
+  let swipeBtns = (item) => [
+    {
+      text: 'Delete',
+      backgroundColor: 'red',
+      underlayColor: 'rgba(0, 0, 0, 1, 0.6)',
+      onPress: () => {  onDelte(item.id_timesheet) }
+   },
+    {
+      text: 'Edit',
+      backgroundColor: '#eed202',
+      underlayColor: 'rgba(0, 0, 0, 1, 0.6)',
+      onPress: () => { onEdit(item) }
+   }
+  ];
 
     
    
     return (
-      <View style={{flex: 1, backgroundColor: '#fff', paddingTop: 30}}>
+      <View style={{flex: 1, backgroundColor: '#fff', paddingTop: 0}}>
+      
       <Image 
-      source={{uri: BG_IMG}}
-      style={StyleSheet.absoluteFillObject}
-      blurRadius={100}
-      />
+    source={require('../assets/Untitled.png')}
+    style={StyleSheet.absoluteFillObject}
+    blurRadius={30}
+    />
+
+      
       <IconButton icon="magnify" size={45} style={{marginLeft: 320, marginTop: 50, position: 'absolute', backgroundColor: '#e6c877',  backgroundColor: '#e6c877', borderWidth: 3, borderColor: 'white'}} onPress={SearchEntry} />
       <View style={{
-          marginTop: 10,
+          marginTop: 25,
           height: 100,
           width:300,
           marginLeft: 10,
           borderWidth: 3,
-          borderColor: 'black',
-          backgroundColor: '#7affbd',
+          borderColor: 'white',
+          backgroundColor: '#FFF0E0',
           borderRadius: 20,
           elevation: 10,
           shadowColor: '#fff',
@@ -699,7 +726,7 @@ db.transaction(function (tx) {
         />
         </View>
 
-<Text style={{backgroundColor: "#091629", borderColor: 'black', paddingHorizontal: 25, paddingTop: 5, borderRadius: 10, height: 40, fontSize: 20, fontWeight: 'bold', color: '#f2fbff' ,width: 300, marginTop: 5, marginLeft: 60, borderWidth: 3}}>Day Total Hours: {totalHrsforday}</Text>
+<Text style={{backgroundColor: "#091629", borderColor: 'black', paddingHorizontal: 25, paddingTop: 5, borderRadius: 10, height: 40, fontSize: 20, fontWeight: 'bold', color: '#f2fbff' ,width: 300, marginTop: 5, marginLeft: 60, borderWidth: 3}}>Week Total Hours: {totalHrsforday}</Text>
           <Animated.FlatList 
     data={flatListItems}
     onScroll={
@@ -714,7 +741,7 @@ db.transaction(function (tx) {
         paddingTop: StatusBar.currentHeight
     }}
     renderItem={({item, index}) => {
-      setIDtimesheet(item.id_timesheet)
+      const isSelected = (selectedItem === item.id_timesheet);
         const inputRange = [
             -1,
             0,
@@ -738,7 +765,11 @@ db.transaction(function (tx) {
             outputRange: [1, 1, 1, 0]
         })
 
-        return <Animated.View style={{flexDirection: 'row', padding: SPACING, marginBottom: SPACING, backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 12,
+        return <Swipeout right={swipeBtns(item)}
+            autoClose='true'
+            backgroundColor= 'transparent'
+            style={styles.swipe}>
+        <Animated.View style={{flexDirection: 'row', padding: SPACING, marginBottom: SPACING, backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 12,
             shadowColor: '#000',
             shadowOffset: {
                 width: 0,
@@ -749,43 +780,22 @@ db.transaction(function (tx) {
             opacity,
             transform: [{scale}]
         }}>
-            <TouchableOpacity onPress={popAlert}>
+          
             <View>
             <Text style={{fontWeight: '700', fontSize: 24, color: '#091629'}}>{item.projNum}  </Text> 
                   <Text style={{opacity: .7, fontSize: 15}}>  {item.projNum} - {item.siteID}</Text>
-                <Text style={{fontWeight: '700', fontSize: 14, color: '#091629'}}>  {item.arrival} - {item.depart}     Duration : {item.totalHrs}</Text>
-          
-           <AwesomeAlert
-          show={showAlert}
-          showProgress={false}
-          title= {item.comment}
-          closeOnTouchOutside={true}
-          closeOnHardwareBackPress={false}
-          showCancelButton={true}
-          showConfirmButton={true}
-          confirmText="Delete"
-          cancelText="Edit"
-          confirmButtonColor="#DD6B55"
-          onCancelPressed={() => {
-            hideAlert()
-            navigation.navigate('EditSheet', item)
-          }}
-          onConfirmPressed={() => {
-            console.log("Timesheet ID: " + IDtimesheet)  
-            deleteEntry(IDtimesheet);  
-            hideAlert(); 
-          }}
-        />
+                <Text style={{fontWeight: '700', fontSize: 14, color: '#091629'}}>  {item.arrival} - {item.depart}                             Duration : {item.totalHrs}</Text>
+        
           
            </View>
-            </TouchableOpacity>  
-           
+            
         </Animated.View>   
+       </Swipeout>
         
     }}
     />
- 
   </View>
+  
 
 
       
@@ -812,6 +822,7 @@ db.transaction(function (tx) {
            flex: 1,
            paddingBottom: 150
            },
+           
            
          text:{
            alignItems: 'center',

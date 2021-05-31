@@ -11,8 +11,9 @@ import _ from "lodash";
 import Swipeout from 'react-native-swipeout';
 import { DatabaseConnection } from '../components/database-connection';
 import { colors } from 'react-native-elements';
-import AwesomeAlert from 'react-native-awesome-alerts';
 import AsyncStorage from "@react-native-community/async-storage";
+import ActionButton from 'react-native-action-button';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const db = DatabaseConnection.getConnection();
 
@@ -495,7 +496,7 @@ const setCheckBox = (newValue) => {
 }
 
 const sow_lunch = () => {
-  if (moment(Week).day("Tuesday").format('MMM Do') == moment().format('MMM Do')) {
+  if (moment(Week).day("Monday").format('MMM Do') == moment().format('MMM Do') || moment(Week).day("Tuesday").format('MMM Do') == moment().format('MMM Do') || moment(Week).day("Wednesday").format('MMM Do') == moment().format('MMM Do') || moment(Week).day("Thursday").format('MMM Do') == moment().format('MMM Do') || moment(Week).day("Friday").format('MMM Do') == moment().format('MMM Do')) {
     setModalVisible(true);
   } else {
     setModalVisible(false);
@@ -617,7 +618,7 @@ db.transaction(function (tx) {
           [
             {
               text: 'Ok',
-              onPress: SearchEntry()
+              onPress: hide_LModal,
             },
           ],
           { cancelable: false }
@@ -698,25 +699,23 @@ db.transaction(function (tx) {
     return (
       <View style={{backgroundColor: colors.white,flex: 1}}>
          <Image 
-    source={{uri: BG_IMG}}
+    source={require('../assets/Untitled.png')}
     style={StyleSheet.absoluteFillObject}
-    blurRadius={80}
+    blurRadius={30}
     onLoad={find_lunch}
     />
-<Text style={{marginLeft: 18, marginTop: 20, fontSize: 16, color: '#091629', fontWeight: 'bold'}}>Week Ending                     Day of the Week</Text>
+<Text style={{marginLeft: 18, marginTop: 20, fontSize: 20, color: '#091629', fontWeight: 'bold'}}>Week Ending            Day of the Week</Text>
 
 
       <View style={{
-        marginTop:0,
+        marginTop: 10,
         height: 100,
         width:380,
         marginLeft: 8,
-        borderWidth: 3,
-        borderColor: 'white',
+        borderWidth: 4,
+        borderColor: 'black',
         backgroundColor: '#34c0eb',
-        borderRadius: 20,
-        borderWidth: 3,
-          borderColor: 'black',
+        borderRadius: 20,        
       }}>
       
         <WeekSelector
@@ -729,7 +728,7 @@ db.transaction(function (tx) {
       </View>
 
         
-        <Picker style={{width: 135, height: 44, backgroundColor: '#e1ecf2', marginTop: -73, marginLeft: 190, borderWidth: 2, borderColor: 'black', borderStyle: 'dashed' }}
+        <Picker style={{width: 145, height: 44, backgroundColor: '#e1ecf2', marginTop: -73, marginLeft: 190, borderWidth: 2, borderColor: 'black', borderStyle: 'dashed' }}
                 selectedValue={dayoftheWeek}
                 itemStyle={{fontWeight: 'bold'}}
                 onValueChange=
@@ -851,7 +850,7 @@ db.transaction(function (tx) {
   onDismiss={onDismiss}
   onConfirm={onConfirm}
   hours={12} // default: current hours
-  minutes={14} // default: current minutes
+  minutes={0} // default: current minutes
   label="Select time" // optional, default 'Select time'
   cancelLabel="Cancel" // optional, default: 'Cancel'
   confirmLabel="Ok" // optional, default: 'Ok'
@@ -867,7 +866,7 @@ db.transaction(function (tx) {
   onDismiss={onFinishDismiss}
   onConfirm={onFinishConfirm}
   hours={12} // default: current hours
-  minutes={14} // default: current minutes
+  minutes={0} // default: current minutes
   label="Select time" // optional, default 'Select time'
   cancelLabel="Cancel" // optional, default: 'Cancel'
   confirmLabel="Ok" // optional, default: 'Ok'
@@ -920,28 +919,22 @@ onValueChange={setCheckBox}
             </View>
           </View>
         </Modal>
-         <IconButton icon="food"  color={Colors.white} size={35} style={{marginLeft: 330, marginTop: -65, position: 'absolute', backgroundColor: '#091629', borderWidth: 3, borderColor: 'white'}} onPress={() => setModalVisible(true)}/>
       </View>
-    
+     <ActionButton buttonColor="rgba(231,76,60,1)">
+          <ActionButton.Item buttonColor='#9b59b6' title="Lunch" onPress={() => setModalVisible(true)}>
+            <Icon name="fast-food" style={styles.actionButtonIcon} />
+          </ActionButton.Item>
+          <ActionButton.Item buttonColor='#3498db' title="Submit" onPress={deleteHandler}>
+            <Icon name="checkmark-sharp" style={styles.actionButtonIcon} />
+          </ActionButton.Item>
+          <ActionButton.Item buttonColor='#1abc9c' title="Add Entry" onPress={pressHandler}>
+            <Icon name="add" style={styles.actionButtonIcon} />
+          </ActionButton.Item>
+        </ActionButton>
     <View>
-    <IconButton icon="plus"  color={Colors.white} size={35} style={{marginLeft: 20, marginTop: -65, position: 'absolute', backgroundColor: '#34c0eb', borderWidth: 3, borderColor: 'white'}} onPress={pressHandler}/>
-    <IconButton icon="check"  color={Colors.white} size={35} style={{marginLeft: 170, marginTop: -65, position: 'absolute', backgroundColor: '#52f549', borderWidth: 3, borderColor: 'white'}} onPress={deleteHandler}/>
-
-  </View>
-
-    {/* <View>
-    <Button style icon="plus" onPress={pressHandler}>
-            Add
-       </Button> 
-       
-       <Button style icon="food" onPress={deleteHandler}>
-            Lunch
-       </Button>
-        </View> */}
-      
-     
-
-       
+    
+   
+  </View>   
   </View>
         
 );
@@ -963,6 +956,11 @@ onValueChange={setCheckBox}
            flex: 1,
            paddingBottom: 150
            },
+           actionButtonIcon: {
+            fontSize: 20,
+            height: 22,
+            color: 'white',
+          },
            
          text:{
            alignItems: 'center',

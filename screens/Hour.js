@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, Text, View, SafeAreaView, TextInput, Alert, Pressable, Modal} from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, TextInput, Alert, Pressable, Modal, ImageBackground, Image} from 'react-native';
 import AsyncStorage from "@react-native-community/async-storage";
 import { Button, IconButton, Card, Colors } from 'react-native-paper';
 import { TimePickerModal } from 'react-native-paper-dates';
@@ -11,6 +11,7 @@ import "intl";
 import "intl/locale-data/jsonp/en";
 import { DatabaseConnection } from '../components/database-connection';
 import moment from 'moment';
+import { TouchableHighlight } from 'react-native';
 
 
 const db = DatabaseConnection.getConnection();
@@ -486,10 +487,17 @@ const time_clash = () => {
 
  return (
   <SafeAreaView style={styles.container}>
+         <Image 
+    source={require('../assets/back.png')}
+    style={StyleSheet.absoluteFillObject}
+    blurRadius={30}
+    />
+    
   <View>
+  <Text style={{fontWeight: 'bold',  fontSize: 20, color: '#091629', marginLeft: 10, marginTop: -30}}>Week Ending                {moment(selectedWeek).format('dddd, MMMM Do')}{navigation.getParam('eow')}</Text>
     <View style={{
-        marginTop:-60,
-        height: 100,
+        marginTop:20,
+        height: 70,
         width:380,
         marginLeft: 8,
         marginBottom:20,
@@ -500,7 +508,6 @@ const time_clash = () => {
         borderWidth: 3,
           borderColor: 'black',
       }}>
-      <Text style={{fontWeight: 'bold',  color: '#091629'}}>Week Ending: {moment(selectedWeek).format('dddd, MMMM Do')}{navigation.getParam('eow')}</Text>
   <WeekSelector
       dateContainerStyle={styles.date}
       whitelistRange={[new Date(2021, 1, 9), new Date()]}
@@ -524,7 +531,7 @@ const time_clash = () => {
 
 
 />
-<Button color="#09253a" style={styles.startTime} icon="walk" onPress={()=> setVisible(true)}>
+<Button color="#09253a" style={styles.startTime} icon="clock" onPress={()=> setVisible(true)}>
   Start: {frTimes}
 </Button>
 
@@ -541,14 +548,14 @@ const time_clash = () => {
   locale={'en'} // optional, default is automically detected by your system
 
 />
-<Button color="#09253a" style={styles.endTime} icon="run" onPress={() => setfinishVisible(true)}>
+<Button color="#09253a" style={styles.endTime} icon="clock" onPress={() => setfinishVisible(true)}>
   Finish: {frFinTimes}
 </Button>
 
 </View>
 
     <View>
-              <Text style={{fontWeight: 'bold', color: '#091629', marginBottom: -20, marginLeft: 20, marginTop: 20}}>
+              <Text style={{fontWeight: 'bold', color: '#091629', marginBottom: -20, marginLeft: 20, marginTop: 0}}>
                   Day of the Week 
               </Text>
              <Picker 
@@ -623,9 +630,30 @@ defaultValue={description}
 style={styles.input}
 />
 
-      <Button color="#09253a" onPress={time_clash}>
-        Add : {Thrs}
-</Button>
+
+<TouchableHighlight style={{ alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 30,
+    elevation: 3,
+    backgroundColor: '#44db47',
+    width: 100,
+    marginLeft: 150,
+    marginTop: 10,
+    borderColor: 'white',
+    borderWidth: 5
+    }}
+    onPress={time_clash}
+    
+    >
+  <Text style={{fontSize: 30,
+    lineHeight: 25,
+    fontWeight: 'bold',
+    letterSpacing: 0.25,
+    color: 'black',
+    }}> + </Text>
+</TouchableHighlight>
 
 
 
@@ -747,7 +775,7 @@ style={styles.input}
           </View>
         </Modal>
         
-        <IconButton icon="food"  color={Colors.white} size={35} style={{marginLeft: 320, marginTop: 15, position: 'absolute', backgroundColor: '#091629', borderWidth: 3, borderColor: 'white'}} onPress={() => setModalVisible(true)}/>
+        <IconButton icon="food"  color={Colors.white} size={35} style={{marginLeft: 320, marginTop: -20, position: 'absolute', backgroundColor: '#091629', borderWidth: 3, borderColor: 'white'}} onPress={() => setModalVisible(true)}/>
       </View>
         
 
