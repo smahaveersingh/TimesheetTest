@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, View, Text, Image, StatusBar, Animated, TouchableOpacity, Alert, Pressable, Modal, TouchableHighlight} from 'react-native';
+import { StyleSheet, View, Text, Image, StatusBar, Animated, TouchableOpacity, Alert} from 'react-native';
 import { Button, IconButton, Card, Colors } from 'react-native-paper';
 import { TimePickerModal } from 'react-native-paper-dates';
 import { Picker } from '@react-native-picker/picker';
@@ -14,6 +14,7 @@ import { colors } from 'react-native-elements';
 import AsyncStorage from "@react-native-community/async-storage";
 import ActionButton from 'react-native-action-button';
 import Icon from 'react-native-vector-icons/Ionicons';
+import Modal from 'react-native-modal';
 
 const db = DatabaseConnection.getConnection();
 
@@ -196,7 +197,7 @@ export default function Home ({ navigation }) {
 
     const deleteHandler = () => 
     {
-      if (moment(Week).day("Friday").format('MMM Do') == moment().format('MMM Do') || moment(Week).day("Monday").format('MMM Do') == moment().format('MMM Do')) {
+      if (moment(Week).day("Tuesday").format('MMM Do') == moment().format('MMM Do') || moment(Week).day("Monday").format('MMM Do') == moment().format('MMM Do')) {
         navigation.navigate('ViewEntry');
       } else {
         alert('Its not Friday or Monday Yet!');
@@ -824,18 +825,18 @@ db.transaction(function (tx) {
     <View style={styles.centeredView}>
       
 <Modal
-  animationType="slide"
-  transparent={true}
-  visible={modalVisible}
-  onRequestClose={() => {
+  isVisible={modalVisible}
+  onSwipeComplete={() => {
     setModalVisible(!modalVisible);
   }}
+  swipeDirection={['up', 'left', 'right', 'down']}
+  style={styles.modst}
 >
 <View style={styles.centeredView}>
 <View style={styles.modalView}>
     <View style={styles.Weekarrow}>
-    <IconButton icon="close"  color={Colors.white} size={29} style={{marginLeft: 322, marginTop: 0, position: 'absolute', backgroundColor: '#e00000', borderWidth: 3, borderColor: 'white'}} onPress={() => setModalVisible(!modalVisible)}/>
-      <Text style={{fontWeight: 'bold',  color: '#091629'}}>Week Ending: {selectedWeek}{navigation.getParam('eow')}</Text>
+    <IconButton icon="close"  color={Colors.white} size={29} style={{marginLeft: 322, marginTop: 0, position: 'absolute', backgroundColor: '#e00000', borderWidth: 0, borderColor: 'white'}} onPress={() => setModalVisible(!modalVisible)}/>
+      <Text style={{fontWeight: 'bold',  color: '#091629', paddingTop: 10, fontSize: 15}}>                         Week Ending: {selectedWeek}{navigation.getParam('eow')}</Text>
   <WeekSelector
       dateContainerStyle={styles.date}
       whitelistRange={[new Date(2021, 1, 9), new Date()]}
@@ -961,7 +962,10 @@ onValueChange={setCheckBox}
             height: 22,
             color: 'white',
           },
-           
+          modst: {
+            justifyContent: 'flex-end',
+            margin: 0,
+          },
          text:{
            alignItems: 'center',
            marginTop:20,
@@ -1154,7 +1158,7 @@ onValueChange={setCheckBox}
               backgroundColor: '#7affbd',
               borderRadius: 20,
               fontWeight: 'bold',
-              borderWidth: 3,
+              borderWidth: 0,
           borderColor: 'white',
              },
              delstyle:{

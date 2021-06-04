@@ -14,6 +14,7 @@ import moment from 'moment';
 import { TouchableHighlight } from 'react-native';
 
 
+
 const db = DatabaseConnection.getConnection();
 
  function Hour ({ navigation }) {
@@ -488,7 +489,7 @@ const time_clash = () => {
  return (
   <SafeAreaView style={styles.container}>
          <Image 
-    source={require('../assets/back.png')}
+    source={require('../assets/Untitled.png')}
     style={StyleSheet.absoluteFillObject}
     blurRadius={30}
     />
@@ -654,131 +655,6 @@ style={styles.input}
     color: 'black',
     }}> + </Text>
 </TouchableHighlight>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      <View style={styles.centeredView}>
-<Modal
-  animationType="slide"
-  transparent={true}
-  visible={modalVisible}
-  onRequestClose={() => {
-    Alert.alert("Modal has been closed.");
-    setModalVisible(!modalVisible);
-  }}
-  
->
-          <View style={styles.centeredView}>
-            <View style={styles.modalView}>
-            <View style={styles.Weekarrow}>
-    <IconButton icon="close"  color={Colors.white} size={29} style={{marginLeft: 322, marginTop: 30, position: 'absolute', backgroundColor: '#e00000', borderWidth: 3, borderColor: 'white'}} onPress={() => setModalVisible(!modalVisible)}/>
-      <Text style={{fontWeight: 'bold',  color: '#091629'}}>Week Ending: {selectedWeek}{navigation.getParam('eow')}</Text>
-  <WeekSelector
-      dateContainerStyle={styles.date}
-      whitelistRange={[new Date(2021, 1, 9), new Date()]}
-      weekStartsOn={6}
-      onWeekChanged={saveStartingWeek}
-    />
-    </View>
-            <Text>Lunch Entry</Text>
-        
-            <TimePickerModal
-  visible={visible}
-  onDismiss={onDismiss}
-  onConfirm={onConfirm}
-  hours={12} // default: current hours
-  minutes={0} // default: current minutes
-  label="Select time" // optional, default 'Select time'
-  cancelLabel="Cancel" // optional, default: 'Cancel'
-  confirmLabel="Ok" // optional, default: 'Ok'
-  animationType="fade" // optional, default is 'none'
-  locale={'en'} // optional, default is automically detected by your system
-/>
-<Button color="#09253a" style={styles.startTime} icon="clock" onPress={()=> setVisible(true)}>
-  Start: {frTimes}
-</Button>
-
-<TimePickerModal
-  visible={finishvisible}
-  onDismiss={onFinishDismiss}
-  onConfirm={onFinishConfirm}
-  hours={12} // default: current hours
-  minutes={0} // default: current minutes
-  label="Select time" // optional, default 'Select time'
-  cancelLabel="Cancel" // optional, default: 'Cancel'
-  confirmLabel="Ok" // optional, default: 'Ok'
-  animationType="fade" // optional, default is 'none'
-  locale={'en'} // optional, default is automically detected by your system
-/>
-<Button color="#09253a" style={styles.endTime} icon="clock" onPress={()=> setfinishVisible(true)}>
-  Finish: {frFinTimes}
-</Button>
-
-      
-        <CheckBox style={styles.check}
-      disabled={false}
-      value={toggleCheckBox}
-      onValueChange={(newValue) => setToggleCheckBox(newValue)}
-    />
-
-  
-
-    <Text style={styles.sameWeek}>Same for the week</Text>
-
-    <View>
-              <Text style={{fontWeight: 'bold', color: '#091629', width: 250}}>
-                  Day of the Week 
-              </Text>
-             <Picker style={styles.datefive}
-              selectedValue={dayoftheWeek}
-              onValueChange=
-              {
-                  saveDayofWeek
-              }>
-                      <Picker.Item key="uniqueID9" label="Please Select a Day" value="" />
-                      <Picker.Item label="Monday" value="monday" />
-                      <Picker.Item label="Tuesday" value="tuesday" />
-                      <Picker.Item label="Wednesday" value="wednesday" />
-                      <Picker.Item label="Thursday" value="thursday" />
-                      <Picker.Item label="Friday" value="friday" />
-                      <Picker.Item label="Saturday" value="saturday" />
-                      <Picker.Item label="Sunday" value="sunday" />
-                     
-            </Picker>
-    </View>
-    
-
-    <Button color="#09253a" onPress={Lunch_time_clash} style={styles.addButton}>
-                Add
-        </Button>
-
-              <Pressable 
-                style={[styles.button, styles.buttonClose]}
-                onPress={() => setModalVisible(!modalVisible)}
-              >
-              <Text style={styles.textStyle}>Hide Modal</Text>
-                
-              </Pressable>
-            </View>
-          </View>
-        </Modal>
-        
-        <IconButton icon="food"  color={Colors.white} size={35} style={{marginLeft: 320, marginTop: -20, position: 'absolute', backgroundColor: '#091629', borderWidth: 3, borderColor: 'white'}} onPress={() => setModalVisible(true)}/>
-      </View>
-        
-
     </View>
 </SafeAreaView>
    );
