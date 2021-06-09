@@ -1,6 +1,6 @@
 
-import * as React from 'react';
-import { StyleSheet, Text, View, SafeAreaView, TextInput, Alert, Pressable, Modal} from 'react-native';
+import React, {useEffect, useState,useRef} from 'react';
+import { StyleSheet, Text, Image, View, SafeAreaView, TextInput, Alert, StatusBar, Animated, TouchableOpacity, TouchableHighlight} from 'react-native';
 import AsyncStorage from "@react-native-community/async-storage";
 import { Button } from 'react-native-paper';
 import { TimePickerModal } from 'react-native-paper-dates';
@@ -11,10 +11,19 @@ import "intl";
 import "intl/locale-data/jsonp/en";
 import { DatabaseConnection } from '../components/database-connection';
 import moment from 'moment';
+import profile from '../assets/profile.png';
+// Tab ICons...
+import home from '../assets/home.png';
+import search from '../assets/clock.png';
+import notifications from '../assets/calendar.png';
+import settings from '../assets/settings.png';
+import logout from '../assets/logout.png'
+// Menu
+import menu from '../assets/menu.png';
+import close from '../assets/close.png';
 
-import Mytext from '../components/Mytext';
-import Mytextinput from '../components/MyTextInput';
-import Mybutton from '../components/Mybutton';
+// Photo
+import photo from '../assets/photo.jpg';
 
 const db = DatabaseConnection.getConnection();
 
@@ -47,7 +56,64 @@ const EditSheet = ({ navigation }) => {
   const [frTimes, setfrTimes] = React.useState(navigation.getParam('arrival'));
   const [frFinTimes, setfrFinTimes] = React.useState(navigation.getParam('depart'));
   const [selectedWeek, setselectedWeek] = React.useState(navigation.getParam('eow'));
-const [description, setDescription] = React.useState(navigation.getParam('comment'));
+  const [description, setDescription] = React.useState(navigation.getParam('comment'));
+  const [currentTab, setCurrentTab] = useState("");
+  // To get the curretn Status of menu ...
+  const [showMenu, setShowMenu] = useState(false);
+
+  // Animated Properties...
+
+  const offsetValue = useRef(new Animated.Value(0)).current;
+  // Scale Intially must be One...
+  const scaleValue = useRef(new Animated.Value(1)).current;
+  const closeButtonOffset = useRef(new Animated.Value(0)).current;
+
+   // For multiple Buttons...
+const TabButton = (currentTab, setCurrentTab, title, image) => {
+  return (
+
+    <TouchableOpacity onPress={() => {
+      if (title == "LogOut") {
+        navigation.navigate("Login")
+      } if (title == "Hour") {
+        navigation.navigate("Hour")
+      }  if (title == "TS Review") { //TS Review
+        navigation.navigate("Test")
+      }  if (title == "Home") { 
+        navigation.navigate("Home")
+      } 
+      else {
+        setCurrentTab(title)
+      }
+    }}>
+      <View style={{
+        flexDirection: "row",
+        alignItems: 'center',
+        paddingVertical: 8,
+        backgroundColor: currentTab == title ? 'white' : 'transparent',
+        paddingLeft: 13,
+        paddingRight: 35,
+        borderRadius: 8,
+        marginTop: 15
+      }}>
+
+        <Image source={image} style={{
+          width: 25, height: 25,
+          tintColor: currentTab == title ? "#5359D1" : "white"
+        }}></Image>
+
+        <Text style={{
+          fontSize: 15,
+          fontWeight: 'bold',
+          paddingLeft: 15,
+          color: currentTab == title ? "#5359D1" : "white"
+        }}>{title}</Text>
+
+      </View>
+    </TouchableOpacity>
+  );
+}
+
 
 const onDismiss = React.useCallback(() => {
   setVisible(false)
@@ -447,7 +513,133 @@ var t1 = [moment(frTimes).format('HH:mm'), moment(frTimes).format('HH:mm')]
 
   return (
     <SafeAreaView style={styles.container}>
-    <View>
+      <View style={{ justifyContent: 'flex-start', padding: 15 }}>
+        <Image source={profile} style={{
+          width: 60,
+          height: 60,
+          borderRadius: 10,
+          marginTop: 12
+        }}></Image>
+
+        <Text style={{
+          fontSize: 20,
+          fontWeight: 'bold',
+          color: 'white',
+          marginTop: 20
+        }}>Jenna Ezarik</Text>
+
+        <TouchableOpacity>
+          <Text style={{
+            marginTop: 6,
+            color: 'white'
+          }}>View Profile</Text>
+        </TouchableOpacity>
+
+        <View style={{ flexGrow: 1, marginTop: 50 }}>
+          {
+            // Tab Bar Buttons....
+          }
+
+          {TabButton(currentTab, setCurrentTab, "Home", home)}
+          {TabButton(currentTab, setCurrentTab, "Hour", search)}
+          {TabButton(currentTab, setCurrentTab, "TS Review", notifications)}
+          {TabButton(currentTab, setCurrentTab, "Settings", settings)}
+
+        </View>
+
+        <View>
+          {TabButton(currentTab, setCurrentTab, "LogOut", logout)}
+        </View>
+
+      </View>
+      {
+        // Over lay View...
+      }
+      <Animated.View style={{
+        flexGrow: 1,
+        backgroundColor: 'white',
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        paddingHorizontal: 15,
+        paddingVertical: 20,
+        borderRadius: showMenu ? 15 : 0,
+        // Transforming View...
+        transform: [
+          { scale: scaleValue },
+          { translateX: offsetValue }
+        ]
+      }}>
+
+        {
+          // Menu Button...
+        }
+
+        <Animated.View style={{
+          transform: [{
+            translateY: closeButtonOffset
+          }]
+        }}>
+          <TouchableHighlight onPress={() => {
+            // Do Actions Here....
+            // Scaling the view...
+            Animated.timing(scaleValue, {
+              toValue: showMenu ? 1 : 0.88,
+              duration: 300,
+              useNativeDriver: true
+            })
+              .start()
+
+            Animated.timing(offsetValue, {
+              // YOur Random Value...
+              toValue: showMenu ? 0 : 230,
+              duration: 300,
+              useNativeDriver: true
+            })
+              .start()
+
+            Animated.timing(closeButtonOffset, {
+              // YOur Random Value...
+              toValue: !showMenu ? -30 : 0,
+              duration: 300,
+              useNativeDriver: true
+            })
+              .start()
+
+            setShowMenu(!showMenu);
+          }}>
+ 
+ 
+ <View >
+             <View style={styles.head}>
+           <Image source={showMenu ? close : menu} style={{
+              width: 20,
+              height: 20,
+              tintColor: 'white',
+              marginTop: 20,
+              marginLeft: -135
+
+            }}></Image>
+        <View>
+                <Text style={styles.headText}>                   Edit Entry</Text>
+        
+
+        </View>
+
+ </View>
+        </View>
+
+            
+
+          </TouchableHighlight>
+
+
+
+
+
+    <View style={{marginTop: 110}}>
       <View style={styles.Weekarrow}>
         <Text style={{fontWeight: 'bold',  color: '#091629'}}>Week Ending: {selectedWeek}</Text>
         <Text style={{fontWeight: 'bold',  color: '#091629'}}>Week day: {moment(currentDate).format('dddd MMM Do')}</Text>
@@ -510,7 +702,7 @@ var t1 = [moment(frTimes).format('HH:mm'), moment(frTimes).format('HH:mm')]
               </Picker>}
           </View>
       </View>
-      <View style={{ flexDirection: 'row' }}>
+      <View style={{ flexDirection: 'row', marginTop: 20 }}>
           <Text style={styles.titleStyle}>Site ID</Text>
           <View style={styles.pickerStyle2}>
               {<Picker
@@ -540,14 +732,16 @@ var t1 = [moment(frTimes).format('HH:mm'), moment(frTimes).format('HH:mm')]
   
   />
   
-        <Button onPress={both}>
-          Update: {Thrs}
+        <Button onPress={both} style={{marginTop: 40}}>
+          Update
   </Button>
   
 
           
   
       </View>
+      </Animated.View>
+      </Animated.View>
   </SafeAreaView>
      );
      }
@@ -556,9 +750,10 @@ var t1 = [moment(frTimes).format('HH:mm'), moment(frTimes).format('HH:mm')]
      const styles = StyleSheet.create({
          container:{
           flex: 1,
-          padding: 10,
-          justifyContent: 'center',
-          alignItems: 'center',
+            backgroundColor: '#091629',
+            alignItems: 'flex-start',
+            justifyContent: 'flex-start',
+           
              },
              date: {
                flex: 1,
@@ -636,11 +831,12 @@ var t1 = [moment(frTimes).format('HH:mm'), moment(frTimes).format('HH:mm')]
                
                input: {
                 margin: 15,
-                height: 40,
+                height: 50,
                 width: 340,
                 borderColor: "#09253a",
                 borderWidth: 2,
-                borderRadius: 10
+                borderRadius: 10,
+                marginTop: 50
              },
              titleStyle: {
               marginLeft:20,
@@ -718,7 +914,27 @@ var t1 = [moment(frTimes).format('HH:mm'), moment(frTimes).format('HH:mm')]
                 modalText: {
                   marginBottom: 15,
                   textAlign: "center"
-                }
+                },
+                head: {
+                 padding:0,
+                 marginLeft:-15.5,
+                 marginTop: -20,
+                 width: 400,
+                 height: 70,
+                 flexDirection: 'row',
+                 alignItems: 'center',
+                 justifyContent: 'center',
+                 backgroundColor: '#091629',
+                 borderTopLeftRadius: 10
+                 },
+                 
+                 headText: {
+                 fontWeight: 'bold',
+                 fontSize: 20,
+                 color: 'whitesmoke',
+                 letterSpacing: 1,
+                 marginBottom:-18
+                 },
               });
        
 export default EditSheet;

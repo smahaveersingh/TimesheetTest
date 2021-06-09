@@ -1,11 +1,10 @@
-import * as React from 'react';
-import { StyleSheet, View, Text, Image, StatusBar, Animated, TouchableOpacity, Alert} from 'react-native';
+import React, {useEffect, useState,useRef} from 'react';
+import { StyleSheet, View, Text, Image, StatusBar, Animated, TouchableOpacity, Alert, SafeAreaView, TouchableHighlight} from 'react-native';
 import { Button, IconButton, Card, Colors } from 'react-native-paper';
 import { TimePickerModal } from 'react-native-paper-dates';
 import { Picker } from '@react-native-picker/picker';
 import moment from 'moment';
 import WeekSelector from 'react-native-week-selector';
-import { MaterialCommunityIcons, AntDesign } from '@expo/vector-icons';
 import CheckBox from '@react-native-community/checkbox';
 import _ from "lodash";
 import Swipeout from 'react-native-swipeout';
@@ -15,6 +14,19 @@ import AsyncStorage from "@react-native-community/async-storage";
 import ActionButton from 'react-native-action-button';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Modal from 'react-native-modal';
+import profile from '../assets/profile.png';
+// Tab ICons...
+import home from '../assets/home.png';
+import search from '../assets/clock.png';
+import notifications from '../assets/calendar.png';
+import settings from '../assets/settings.png';
+import logout from '../assets/logout.png';
+// Menu
+import menu from '../assets/menu.png';
+import close from '../assets/close.png';
+
+// Photo
+import photo from '../assets/photo.jpg';
 
 const db = DatabaseConnection.getConnection();
 
@@ -43,7 +55,61 @@ export default function Home ({ navigation }) {
   const [selectedWeek, setselectedWeek] = React.useState(moment().day(5).format("L"));
   const [Thrs, setThrs] = React.useState('');
   const [selectedItem, setSelectedItem] = React.useState('');
+  const [currentTab, setCurrentTab] = useState("Home");
+  // To get the curretn Status of menu ...
+  const [showMenu, setShowMenu] = useState(false);
 
+  // Animated Properties...
+
+  const offsetValue = useRef(new Animated.Value(0)).current;
+  // Scale Intially must be One...
+  const scaleValue = useRef(new Animated.Value(1)).current;
+  const closeButtonOffset = useRef(new Animated.Value(0)).current;
+
+
+  // For multiple Buttons...
+const TabButton = (currentTab, setCurrentTab, title, image) => {
+  return (
+
+    <TouchableOpacity onPress={() => {
+      if (title == "LogOut") {
+        navigation.navigate("Login")
+      } if (title == "Hour") { //TS Review
+        navigation.navigate("Hour")
+      }  if (title == "TS Review") { //TS Review
+        navigation.navigate("Test")
+      } 
+      else {
+        setCurrentTab(title)
+      }
+    }}>
+      <View style={{
+        flexDirection: "row",
+        alignItems: 'center',
+        paddingVertical: 8,
+        backgroundColor: currentTab == title ? 'white' : 'transparent',
+        paddingLeft: 13,
+        paddingRight: 35,
+        borderRadius: 8,
+        marginTop: 15
+      }}>
+
+        <Image source={image} style={{
+          width: 25, height: 25,
+          tintColor: currentTab == title ? "#5359D1" : "white"
+        }}></Image>
+
+        <Text style={{
+          fontSize: 15,
+          fontWeight: 'bold',
+          paddingLeft: 15,
+          color: currentTab == title ? "#5359D1" : "white"
+        }}>{title}</Text>
+
+      </View>
+    </TouchableOpacity>
+  );
+}
   
 
       const onDismiss = React.useCallback(() => {    // function for closing Start TimePicker
@@ -698,9 +764,133 @@ db.transaction(function (tx) {
   
    
     return (
-      <View style={{backgroundColor: colors.white,flex: 1}}>
+      <SafeAreaView style={styles.container1}>
+         <View style={{ justifyContent: 'flex-start', padding: 15 }}>
+        <Image source={profile} style={{
+          width: 60,
+          height: 60,
+          borderRadius: 10,
+          marginTop: 12
+        }}></Image>
+
+        <Text style={{
+          fontSize: 20,
+          fontWeight: 'bold',
+          color: 'white',
+          marginTop: 20
+        }}>John Doe</Text>
+
+        <TouchableOpacity>
+          <Text style={{
+            marginTop: 6,
+            color: 'white'
+          }}>View Profile</Text>
+        </TouchableOpacity>
+
+        <View style={{ flexGrow: 1, marginTop: 50 }}>
+          {
+            // Tab Bar Buttons....
+          }
+
+          {TabButton(currentTab, setCurrentTab, "Home", home)}
+          {TabButton(currentTab, setCurrentTab, "Hour", search)}
+          {TabButton(currentTab, setCurrentTab, "TS Review", notifications)}
+          {TabButton(currentTab, setCurrentTab, "Settings", settings)}
+
+        </View>
+
+        <View>
+          {TabButton(currentTab, setCurrentTab, "LogOut", logout)}
+        </View>
+
+      </View>
+      {
+        // Over lay View...
+      }
+
+      <Animated.View style={{
+        flexGrow: 1,
+        backgroundColor: 'white',
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        paddingHorizontal: 15,
+        paddingVertical: 20,
+        borderRadius: showMenu ? 15 : 0,
+        // Transforming View...
+        transform: [
+          { scale: scaleValue },
+          { translateX: offsetValue }
+        ]
+      }}>
+
+        {
+          // Menu Button...
+        }
+
+        <Animated.View style={{
+          transform: [{
+            translateY: closeButtonOffset
+          }]
+        }}>
+
+<TouchableHighlight onPress={() => {
+            // Do Actions Here....
+            // Scaling the view...
+            Animated.timing(scaleValue, {
+              toValue: showMenu ? 1 : 0.88,
+              duration: 300,
+              useNativeDriver: true
+            })
+              .start()
+
+            Animated.timing(offsetValue, {
+              // YOur Random Value...
+              toValue: showMenu ? 0 : 230,
+              duration: 300,
+              useNativeDriver: true
+            })
+              .start()
+
+            Animated.timing(closeButtonOffset, {
+              // YOur Random Value...
+              toValue: !showMenu ? -30 : 0,
+              duration: 300,
+              useNativeDriver: true
+            })
+              .start()
+
+            setShowMenu(!showMenu);
+          }}>
+ 
+ 
+ <View >
+             <View style={styles.head}>
+           <Image source={showMenu ? close : menu} style={{
+              width: 20,
+              height: 20,
+              tintColor: 'white',
+              marginTop: 20,
+              marginLeft: -135
+
+            }}></Image>
+        <View>
+                <Text style={styles.headText}>                   Timesheet</Text>
+        
+
+        </View>
+
+ </View>
+        </View>
+
+            
+
+          </TouchableHighlight>
+
+      <View style={{backgroundColor: colors.white}}>
          <Image 
-    source={require('../assets/Untitled.png')}
     style={StyleSheet.absoluteFillObject}
     blurRadius={30}
     onLoad={find_lunch}
@@ -712,7 +902,7 @@ db.transaction(function (tx) {
         marginTop: 10,
         height: 100,
         width:380,
-        marginLeft: 8,
+        marginLeft: -10,
         borderWidth: 4,
         borderColor: 'black',
         backgroundColor: '#34c0eb',
@@ -729,7 +919,7 @@ db.transaction(function (tx) {
       </View>
 
         
-        <Picker style={{width: 145, height: 44, backgroundColor: '#e1ecf2', marginTop: -73, marginLeft: 190, borderWidth: 2, borderColor: 'black', borderStyle: 'dashed' }}
+        <Picker style={{width: 145, height: 44, backgroundColor: '#e1ecf2', marginTop: -73, marginLeft: 170, borderWidth: 2, borderColor: 'black', borderStyle: 'dashed' }}
                 selectedValue={dayoftheWeek}
                 itemStyle={{fontWeight: 'bold'}}
                 onValueChange=
@@ -823,8 +1013,7 @@ db.transaction(function (tx) {
     />
  
     <View style={styles.centeredView}>
-      
-<Modal
+    <Modal
   isVisible={modalVisible}
   onSwipeComplete={() => {
     setModalVisible(!modalVisible);
@@ -835,8 +1024,8 @@ db.transaction(function (tx) {
 <View style={styles.centeredView}>
 <View style={styles.modalView}>
     <View style={styles.Weekarrow}>
-    <IconButton icon="close"  color={Colors.white} size={29} style={{marginLeft: 322, marginTop: 0, position: 'absolute', backgroundColor: '#e00000', borderWidth: 0, borderColor: 'white'}} onPress={() => setModalVisible(!modalVisible)}/>
-      <Text style={{fontWeight: 'bold',  color: '#091629', paddingTop: 10, fontSize: 15}}>                         Week Ending: {selectedWeek}{navigation.getParam('eow')}</Text>
+    <Text style={{marginLeft: 65, marginTop:-35, color: '#ffffff', position: 'absolute'}}> Swipe the Lunch Tab if not in use </Text>
+      <Text style={{fontWeight: 'bold',  color: '#091629', paddingTop: 10, fontSize: 15}}>                       Week Ending: {selectedWeek}{navigation.getParam('eow')}</Text>
   <WeekSelector
       dateContainerStyle={styles.date}
       whitelistRange={[new Date(2021, 1, 9), new Date()]}
@@ -889,7 +1078,8 @@ onValueChange={setCheckBox}
 
     <Text style={styles.sameWeek}>Same for the week</Text>
 
-    <View>
+    {toggleCheckBox ? (<Text></Text>): (  
+  <View>
               <Text style={{fontWeight: 'bold', color: '#091629', width: 250}}>
                   Day of the Week 
               </Text>
@@ -910,8 +1100,8 @@ onValueChange={setCheckBox}
                      
             </Picker>
     </View>
+    )}
     
-
     <Button color="#09253a" onPress={time_clash} style={styles.addButton}>
                 Add Lunch
         </Button>
@@ -921,7 +1111,18 @@ onValueChange={setCheckBox}
           </View>
         </Modal>
       </View>
-     <ActionButton buttonColor="rgba(231,76,60,1)">
+
+        
+     
+    <View>
+    
+   
+  </View>  
+   
+  </View>
+  
+      </Animated.View>
+      <ActionButton  buttonColor="rgba(231,76,60,1)">
           <ActionButton.Item buttonColor='#9b59b6' title="Lunch" onPress={() => setModalVisible(true)}>
             <Icon name="fast-food" style={styles.actionButtonIcon} />
           </ActionButton.Item>
@@ -932,12 +1133,8 @@ onValueChange={setCheckBox}
             <Icon name="add" style={styles.actionButtonIcon} />
           </ActionButton.Item>
         </ActionButton>
-    <View>
-    
-   
-  </View>   
-  </View>
-        
+      </Animated.View>
+      </SafeAreaView>
 );
             
    }
@@ -957,11 +1154,18 @@ onValueChange={setCheckBox}
            flex: 1,
            paddingBottom: 150
            },
+           container1:{
+            flex: 1,
+            backgroundColor: '#091629',
+            alignItems: 'flex-start',
+            justifyContent: 'flex-start',
+              },
            actionButtonIcon: {
             fontSize: 20,
             height: 22,
             color: 'white',
           },
+          
           modst: {
             justifyContent: 'flex-end',
             margin: 0,
@@ -1175,6 +1379,27 @@ onValueChange={setCheckBox}
               padding: 10,
               borderRadius: 8,
               fontWeight: 'bold'
-             }
+             },
+             head: {
+              padding:0,
+              marginLeft:-15.5,
+              marginTop: -20,
+              width: 400,
+              height: 70,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#091629',
+              borderTopLeftRadius: 10
+              },
+              
+              headText: {
+              fontWeight: 'bold',
+              fontSize: 20,
+              color: 'whitesmoke',
+              letterSpacing: 1,
+              marginBottom:-18
+              },
+              
      });
      

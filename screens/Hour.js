@@ -1,5 +1,5 @@
-import * as React from 'react';
-import { StyleSheet, Text, View, SafeAreaView, TextInput, Alert, Pressable, Modal, ImageBackground, Image} from 'react-native';
+import React, {useEffect, useState,useRef} from 'react';
+import { StyleSheet, Text, View, TextInput, Alert, Pressable, Image, StatusBar, Animated, TouchableOpacity, SafeAreaView, TouchableHighlight} from 'react-native';
 import AsyncStorage from "@react-native-community/async-storage";
 import { Button, IconButton, Card, Colors } from 'react-native-paper';
 import { TimePickerModal } from 'react-native-paper-dates';
@@ -11,9 +11,18 @@ import "intl";
 import "intl/locale-data/jsonp/en";
 import { DatabaseConnection } from '../components/database-connection';
 import moment from 'moment';
-import { TouchableHighlight } from 'react-native';
-
-
+import profile from '../assets/profile.png';
+// Tab ICons...
+import home from '../assets/home.png';
+import search from '../assets/clock.png';
+import notifications from '../assets/calendar.png';
+import settings from '../assets/settings.png';
+import logout from '../assets/logout.png'
+// Menu
+import menu from '../assets/menu.png';
+import close from '../assets/close.png';
+// Photo
+import photo from '../assets/photo.jpg';
 
 const db = DatabaseConnection.getConnection();
 
@@ -47,6 +56,63 @@ const db = DatabaseConnection.getConnection();
 
   const [isLoading, setLoading] = React.useState(true);
   const [data, setData] = React.useState([]);
+  const [currentTab, setCurrentTab] = useState("Hour");
+  // To get the curretn Status of menu ...
+  const [showMenu, setShowMenu] = useState(false);
+
+  // Animated Properties...
+
+  const offsetValue = useRef(new Animated.Value(0)).current;
+  // Scale Intially must be One...
+  const scaleValue = useRef(new Animated.Value(1)).current;
+  const closeButtonOffset = useRef(new Animated.Value(0)).current;
+  
+  // For multiple Buttons...
+const TabButton = (currentTab, setCurrentTab, title, image) => {
+  return (
+
+    <TouchableOpacity onPress={() => {
+      if (title == "LogOut") {
+        navigation.navigate("Login")
+      } if (title == "Hour") {
+        navigation.navigate("Hour")
+      } if (title == "Home") {
+        navigation.navigate("Home")
+      } if (title == "TS Review") { //TS Review
+        navigation.navigate("Test")
+      } 
+      else {
+        setCurrentTab(title)
+      }
+    }}>
+      <View style={{
+        flexDirection: "row",
+        alignItems: 'center',
+        paddingVertical: 8,
+        backgroundColor: currentTab == title ? 'white' : 'transparent',
+        paddingLeft: 13,
+        paddingRight: 35,
+        borderRadius: 8,
+        marginTop: 15
+      }}>
+
+        <Image source={image} style={{
+          width: 25, height: 25,
+          tintColor: currentTab == title ? "#5359D1" : "white"
+        }}></Image>
+
+        <Text style={{
+          fontSize: 15,
+          fontWeight: 'bold',
+          paddingLeft: 15,
+          color: currentTab == title ? "#5359D1" : "white"
+        }}>{title}</Text>
+
+      </View>
+    </TouchableOpacity>
+  );
+}
+
 
   const onDismiss = React.useCallback(() => {
     setVisible(false)
@@ -488,25 +554,143 @@ const time_clash = () => {
 
  return (
   <SafeAreaView style={styles.container}>
-         <Image 
-    source={require('../assets/Untitled.png')}
-    style={StyleSheet.absoluteFillObject}
-    blurRadius={30}
-    />
+       <View style={{ justifyContent: 'flex-start', padding: 15 }}>
+        <Image source={profile} style={{
+          width: 60,
+          height: 60,
+          borderRadius: 10,
+          marginTop: 12
+        }}></Image>
+
+        <Text style={{
+          fontSize: 20,
+          fontWeight: 'bold',
+          color: 'white',
+          marginTop: 20
+        }}>John Doe</Text>
+
+        <TouchableOpacity>
+          <Text style={{
+            marginTop: 6,
+            color: 'white'
+          }}>View Profile</Text>
+        </TouchableOpacity>
+
+        <View style={{ flexGrow: 1, marginTop: 50 }}>
+          {
+            // Tab Bar Buttons....
+          }
+
+          {TabButton(currentTab, setCurrentTab, "Home", home)}
+          {TabButton(currentTab, setCurrentTab, "Hour", search)}
+          {TabButton(currentTab, setCurrentTab, "TS Review", notifications)}
+          {TabButton(currentTab, setCurrentTab, "Settings", settings)}
+
+        </View>
+
+        <View>
+          {TabButton(currentTab, setCurrentTab, "LogOut", logout)}
+        </View>
+
+      </View>
+      {
+        // Over lay View...
+      }
+
+<Animated.View style={{
+        flexGrow: 1,
+        backgroundColor: 'white',
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        paddingHorizontal: 15,
+        paddingVertical: 20,
+        borderRadius: showMenu ? 15 : 0,
+        // Transforming View...
+        transform: [
+          { scale: scaleValue },
+          { translateX: offsetValue }
+        ]
+      }}>
+
+        {
+          // Menu Button...
+        }
+        <Animated.View style={{
+          transform: [{
+            translateY: closeButtonOffset
+          }]
+        }}>
+          <TouchableHighlight onPress={() => {
+            // Do Actions Here....
+            // Scaling the view...
+            Animated.timing(scaleValue, {
+              toValue: showMenu ? 1 : 0.88,
+              duration: 300,
+              useNativeDriver: true
+            })
+              .start()
+
+            Animated.timing(offsetValue, {
+              // YOur Random Value...
+              toValue: showMenu ? 0 : 230,
+              duration: 300,
+              useNativeDriver: true
+            })
+              .start()
+
+            Animated.timing(closeButtonOffset, {
+              // YOur Random Value...
+              toValue: !showMenu ? -30 : 0,
+              duration: 300,
+              useNativeDriver: true
+            })
+              .start()
+
+            setShowMenu(!showMenu);
+          }}>
+ 
+ 
+ <View >
+             <View style={styles.head}>
+           <Image source={showMenu ? close : menu} style={{
+              width: 20,
+              height: 20,
+              tintColor: 'white',
+              marginTop: 20,
+              marginLeft: -135
+
+            }}></Image>
+        <View>
+                <Text style={styles.headText}>                   Add Entry</Text>
+        
+
+        </View>
+
+ </View>
+        </View>
+
+            
+
+          </TouchableHighlight>
+
+       
     
   <View>
-  <Text style={{fontWeight: 'bold',  fontSize: 20, color: '#091629', marginLeft: 10, marginTop: -30}}>Week Ending                {moment(selectedWeek).format('dddd, MMMM Do')}{navigation.getParam('eow')}</Text>
+  <Text style={{fontWeight: 'bold',  fontSize: 20, color: '#091629', marginLeft: 10, marginTop: 10}}>Week Ending                {moment(selectedWeek).format('dddd, MMMM Do')}{navigation.getParam('eow')}</Text>
     <View style={{
         marginTop:20,
         height: 70,
         width:380,
-        marginLeft: 8,
+        marginLeft: -8,
         marginBottom:20,
         borderWidth: 3,
         borderColor: 'white',
         backgroundColor: '#34c0eb',
         borderRadius: 20,
-        borderWidth: 3,
+        borderWidth: 4,
           borderColor: 'black',
       }}>
   <WeekSelector
@@ -640,7 +824,7 @@ style={styles.input}
     elevation: 3,
     backgroundColor: '#44db47',
     width: 100,
-    marginLeft: 150,
+    marginLeft: 130,
     marginTop: 10,
     borderColor: 'white',
     borderWidth: 5
@@ -656,6 +840,8 @@ style={styles.input}
     }}> + </Text>
 </TouchableHighlight>
     </View>
+    </Animated.View>
+    </Animated.View>
 </SafeAreaView>
    );
    }
@@ -664,9 +850,9 @@ style={styles.input}
    const styles = StyleSheet.create({
        container:{
         flex: 1,
-        padding: 10,
-        justifyContent: 'center',
-        alignItems: 'center',
+            backgroundColor: '#091629',
+            alignItems: 'flex-start',
+            justifyContent: 'flex-start',
            },
            date: {
              flex: 1,
@@ -750,7 +936,8 @@ style={styles.input}
               width: 340,
               borderColor: "#09253a",
               borderWidth: 2,
-              borderRadius: 10
+              borderRadius: 10,
+              marginLeft: 8
            },
            titleStyle: {
             marginLeft:20,
@@ -831,7 +1018,28 @@ style={styles.input}
               modalText: {
                 marginBottom: 15,
                 textAlign: "center"
-              }
+              },
+              head: {
+                padding:0,
+                marginLeft:-15.5,
+                marginTop: -20,
+                width: 400,
+                height: 70,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#091629',
+                borderTopLeftRadius: 10
+                },
+                
+                headText: {
+                fontWeight: 'bold',
+                fontSize: 20,
+                color: 'whitesmoke',
+                letterSpacing: 1,
+                marginBottom:-18
+                
+                },
             });
      
      export default Hour;

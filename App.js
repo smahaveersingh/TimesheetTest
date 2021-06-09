@@ -1,10 +1,11 @@
 import React, {useState} from 'react';
 import * as Font from 'expo-font';
-import { StatusBar, LogBox } from "react-native";
+import { StatusBar, LogBox, Dimensions } from "react-native";
 import AppLoading  from 'expo-app-loading';
 import Navigator from './routes/drawer';
 import { isAndroid } from "@freakycoder/react-native-helpers";
 import AnimatedSplash from "react-native-animated-splash-screen";
+
 
 LogBox.ignoreAllLogs();
 

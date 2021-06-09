@@ -9,6 +9,7 @@ import ViewEntry from '../screens/ViewEntry';
 import ListView from '../screens/ListView';
 import Header from '../components/Header';
 import Onboarding from '../screens/Onboarding';
+import Test from '../screens/Tester';
 
 
 const screens = {
@@ -33,9 +34,7 @@ ListView:
       screen: Login,
       navigationOptions:
       {
-        title: null,
-        header: () => null,
-        headerLeft: () => null
+        header: () => null
       }
 },
 
@@ -44,8 +43,7 @@ ListView:
       screen: Home,
       navigationOptions:({ navigation }) => {
       return {
-        headerTitle: () => <Header navigation={navigation} title='Timesheet' />,
-        headerLeft: () => null
+        header: () => null
             }
       }
   },
@@ -55,8 +53,7 @@ Hour:
     screen: Hour,
     navigationOptions:({ navigation }) => {
     return {
-      headerTitle: () => <Header navigation={navigation} title='Enter hours' />,
-      headerLeft: () => null
+      header: () => null
           }
     }
 },
@@ -65,8 +62,7 @@ EditSheet:
     screen: EditSheet,
     navigationOptions:({ navigation }) => {
     return {
-      headerTitle: () => <Header navigation={navigation} title='Edit' />,
-      headerLeft: () => null,
+      header: () => null
       
           }
     }
@@ -77,8 +73,16 @@ ViewEntry:
     screen: ViewEntry,
     navigationOptions:({ navigation }) => {
     return {
-      headerTitle: () => <Header navigation={navigation} title='Delete Entry' />,
-      headerLeft: () => null
+      header: () => null
+          }
+    }
+},
+Test:
+  {
+    screen: Test,
+    navigationOptions:({ navigation }) => {
+    return {
+      header: () => null
           }
     }
 }
