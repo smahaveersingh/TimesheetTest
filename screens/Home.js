@@ -34,7 +34,7 @@ const db = DatabaseConnection.getConnection();
 
 export default function Home ({ navigation }) {
 
-  const selectDate = new Date();
+  const selectDate = new Date();                                           //var to get date
   const [flatListItems, setFlatListItems] = React.useState([]);            //variable for storing entries into the FlatList
   const [modalVisible, setModalVisible] = React.useState(false);           //Flag Variable for Modal Pop-Up   
   const [Hours, setHours] = React.useState('');                            //Variable for Hours from TimePicker
@@ -52,31 +52,30 @@ export default function Home ({ navigation }) {
   const [frTimes, setfrTimes] = React.useState('');                                         //variabe to store formatted Start Times
   const [frFinTimes, setfrFinTimes] = React.useState('');                                   //variabe to store formatted Finish Times
   const [totalHrsforday, settotalHrsforday] = React.useState([]);                           //variable to store total Hours for a given day
-  const [selectedWeek, setselectedWeek] = React.useState(moment().day(5).format("L"));
-  const [Thrs, setThrs] = React.useState('');
+  const [selectedWeek, setselectedWeek] = React.useState(moment().day(5).format("L"));      //variable to store EOW ["moment().day(5).format("L")"] ---> finding friday using moment library
+  const [Thrs, setThrs] = React.useState('');                                               //variable to set Total Hours
   const [selectedItem, setSelectedItem] = React.useState('');
-  const [currentTab, setCurrentTab] = useState("Home");
-  // To get the curretn Status of menu ...
-  const [showMenu, setShowMenu] = useState(false);
+  const [currentTab, setCurrentTab] = useState("Home");              //variable to set current Tab status in side Drawer
+  const [showMenu, setShowMenu] = useState(false);                   //variable to get the curretn Status of menu ...
 
   // Animated Properties...
-
   const offsetValue = useRef(new Animated.Value(0)).current;
   // Scale Intially must be One...
   const scaleValue = useRef(new Animated.Value(1)).current;
   const closeButtonOffset = useRef(new Animated.Value(0)).current;
 
 
-  // For multiple Buttons...
-const TabButton = (currentTab, setCurrentTab, title, image) => {
+  //Usefull For creating multiple Buttons at once instead of declaring them one by one..........
+  const TabButton = (currentTab, setCurrentTab, title, image) => {  //Function to create custom Styled Buttons for Side Drawer
   return (
-
     <TouchableOpacity onPress={() => {
-      if (title == "LogOut") {
+      if (title == "LogOut") {        //If Logout Button is selected in the side Drawer, navigate the user to Login Screen
         navigation.navigate("Login")
-      } if (title == "Hour") { //TS Review
+      } if (title == "Hour") {        //If Hour Button is selected, navigate the user to Add Entry Screen
         navigation.navigate("Hour")
-      }  if (title == "TS Review") { //TS Review
+      } if (title == "Home") {        //If Home Button is selected, navigate the user to Home Screen
+        navigation.navigate("Home")
+      } if (title == "TS Review") {   //If TS Review Button is selected, navigate the user to TS Review Screen
         navigation.navigate("Test")
       } 
       else {
@@ -87,7 +86,7 @@ const TabButton = (currentTab, setCurrentTab, title, image) => {
         flexDirection: "row",
         alignItems: 'center',
         paddingVertical: 8,
-        backgroundColor: currentTab == title ? 'white' : 'transparent',
+        backgroundColor: currentTab == title ? 'white' : 'transparent', //If the current Tab is the same as the title in the side drawer, set the BG color to white, else to Transparent 
         paddingLeft: 13,
         paddingRight: 35,
         borderRadius: 8,
@@ -144,7 +143,7 @@ const TabButton = (currentTab, setCurrentTab, title, image) => {
           var FinMnts = moment(minutes, 'mm');
           hours = setfinishHours(FinHrs.format('HH'));
           minutes = setfinishMinutes(FinMnts.format('mm'));
-          var Fintimes = FinHrs.format('HH') + ':' + FinMnts.format('mm');
+          var Fintimes = FinHrs.format('HH') + ':' + FinMnts.format('mm'); //var to combine Hours and Minute into HH:mm format
           console.log('Finish Times: ' + Fintimes);
           setfrFinTimes(Fintimes);
           

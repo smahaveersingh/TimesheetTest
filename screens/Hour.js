@@ -1,11 +1,10 @@
 import React, {useEffect, useState,useRef} from 'react';
-import { StyleSheet, Text, View, TextInput, Alert, Pressable, Image, StatusBar, Animated, TouchableOpacity, SafeAreaView, TouchableHighlight} from 'react-native';
+import { StyleSheet, Text, View, TextInput, Alert, Image, StatusBar, Animated, TouchableOpacity, SafeAreaView, TouchableHighlight} from 'react-native';
 import AsyncStorage from "@react-native-community/async-storage";
-import { Button, IconButton, Card, Colors } from 'react-native-paper';
+import { Button } from 'react-native-paper';
 import { TimePickerModal } from 'react-native-paper-dates';
 import { ActivityIndicator, FlatList} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import CheckBox from '@react-native-community/checkbox';
 import WeekSelector from 'react-native-week-selector';
 import "intl";
 import "intl/locale-data/jsonp/en";
@@ -21,64 +20,52 @@ import logout from '../assets/logout.png'
 // Menu
 import menu from '../assets/menu.png';
 import close from '../assets/close.png';
-// Photo
-import photo from '../assets/photo.jpg';
+
 
 const db = DatabaseConnection.getConnection();
 
  function Hour ({ navigation }) {
 
-  const selectDate = new Date();
-  const [currentDate, setCurrentDate] = React.useState('');
-  const [toggleCheckBox, setToggleCheckBox] = React.useState(false)
-
-  const [modalVisible, setModalVisible] = React.useState(false);
-  const [dayoftheWeek, setDayoftheWeek] = React.useState(moment().format("L"));
-  const [projNum, setprojNum] = React.useState('');
-  const [siteID, setsiteID] = React.useState('')
-  const [Thrs, setThrs] = React.useState('');
-  const [visible, setVisible] = React.useState(false);
-  const [finishvisible, setfinishVisible] = React.useState(false);
-  const [Lvisible, setLVisible] = React.useState(false);
-  const [Lfinishvisible, setLfinishVisible] = React.useState(false);
-
-  const [Hours, setHours] = React.useState(selectDate.getHours());
-  const [Minutes, setMinutes] = React.useState(selectDate.getMinutes());
-  const [finishHours, setfinishHours] = React.useState(selectDate.getHours());
-  const [finishMinutes, setfinishMinutes] = React.useState(selectDate.getMinutes());
-  
-  
-  const [frTimes, setfrTimes] = React.useState('');
-  const [frFinTimes, setfrFinTimes] = React.useState('');
-  const [description, setDescription] = React.useState('');
-  const [selectedWeek, setselectedWeek] = React.useState(moment().day(5).format("L"));
-  var timeList  = []; //array that stores entry details
-
+  const selectDate = new Date();                                    //var to get date
+  const [currentDate, setCurrentDate] = React.useState('');         //var to set selected date
+  const [toggleCheckBox, setToggleCheckBox] = React.useState(false) // var for Lunch checkbox (i.e. same Lunch for week)
+  const [dayoftheWeek, setDayoftheWeek] = React.useState(moment().format("L")); // var to set selected DOW
+  const [projNum, setprojNum] = React.useState('');     //var to set selected ProjNum
+  const [siteID, setsiteID] = React.useState('')        //var to set selected SiteID
+  const [Thrs, setThrs] = React.useState('');           //var to set Total Hours
+  const [visible, setVisible] = React.useState(false);  //Flag var to show  & hide Start Timepicker
+  const [finishvisible, setfinishVisible] = React.useState(false);                  //Flag var to show  & hide Finish Timepicker
+  const [Hours, setHours] = React.useState(selectDate.getHours());                  //var to set selected Hour from Start TimePicker
+  const [Minutes, setMinutes] = React.useState(selectDate.getMinutes());            //var to set selected Minutes from Start TimePicker
+  const [finishHours, setfinishHours] = React.useState(selectDate.getHours());      //var to set selected Hour from Finish TimePicker
+  const [finishMinutes, setfinishMinutes] = React.useState(selectDate.getMinutes());//var to set selected Minutes from Start TimePicker
+  const [frTimes, setfrTimes] = React.useState('');                                 //var to format the selected Start Time from TimePicker
+  const [frFinTimes, setfrFinTimes] = React.useState('');                           //var to format the selected Finish Time from TimePicker
+  const [description, setDescription] = React.useState('');                         //var to set Description value
+  const [selectedWeek, setselectedWeek] = React.useState(moment().day(5).format("L")); //var to set selected EOW
   const [isLoading, setLoading] = React.useState(true);
   const [data, setData] = React.useState([]);
-  const [currentTab, setCurrentTab] = useState("Hour");
-  // To get the curretn Status of menu ...
-  const [showMenu, setShowMenu] = useState(false);
+  const [currentTab, setCurrentTab] = useState("Hour");   //var to set current Tab status in side Drawer
+  const [showMenu, setShowMenu] = useState(false);        //var to get the curretn Status of menu ...
 
   // Animated Properties...
-
   const offsetValue = useRef(new Animated.Value(0)).current;
   // Scale Intially must be One...
   const scaleValue = useRef(new Animated.Value(1)).current;
   const closeButtonOffset = useRef(new Animated.Value(0)).current;
   
-  // For multiple Buttons...
-const TabButton = (currentTab, setCurrentTab, title, image) => {
+  //Usefull For creating multiple Buttons at once instead of declaring them one by one..........
+  const TabButton = (currentTab, setCurrentTab, title, image) => {  //Function to create custom Styled Buttons for Side Drawer
   return (
 
     <TouchableOpacity onPress={() => {
-      if (title == "LogOut") {
+      if (title == "LogOut") {        //If Logout Button is selected in the side Drawer, navigate the user to Login Screen
         navigation.navigate("Login")
-      } if (title == "Hour") {
+      } if (title == "Hour") {        //If Hour Button is selected, navigate the user to Add Entry Screen
         navigation.navigate("Hour")
-      } if (title == "Home") {
+      } if (title == "Home") {        //If Home Button is selected, navigate the user to Home Screen
         navigation.navigate("Home")
-      } if (title == "TS Review") { //TS Review
+      } if (title == "TS Review") {   //If TS Review Button is selected, navigate the user to TS Review Screen
         navigation.navigate("Test")
       } 
       else {
@@ -89,7 +76,7 @@ const TabButton = (currentTab, setCurrentTab, title, image) => {
         flexDirection: "row",
         alignItems: 'center',
         paddingVertical: 8,
-        backgroundColor: currentTab == title ? 'white' : 'transparent',
+        backgroundColor: currentTab == title ? 'white' : 'transparent', //If the current Tab is the same as the title in the side drawer, set the BG color to white, else to Transparent 
         paddingLeft: 13,
         paddingRight: 35,
         borderRadius: 8,
@@ -114,34 +101,23 @@ const TabButton = (currentTab, setCurrentTab, title, image) => {
 }
 
 
-  const onDismiss = React.useCallback(() => {
+  const onDismiss = React.useCallback(() => {       //Function to close Start TimePicker Modal when user clicks Cancel/Dismiss
     setVisible(false)
   }, [setVisible])
 
-  const onFinishDismiss = React.useCallback(() => {
+  const onFinishDismiss = React.useCallback(() => { //Function to close Finish TimePicker Modal when user clicks Cancel/Dismiss
     setfinishVisible(false)
   }, [setfinishVisible])
 
-  const onLDismiss = React.useCallback(() => {
-    setLVisible(false)
-  }, [setLVisible])
 
-  const onLFinishDismiss = React.useCallback(() => {
-    setLfinishVisible(false)
-  }, [setLfinishVisible])
-
-
-  const onConfirm = React.useCallback(
+  const onConfirm = React.useCallback(              //Function to open Start TimePicker Modal and set the selected formatted times 
     ({ hours, minutes }) => {
       setVisible(false);
       console.log({ hours, minutes });
       var FrHours = moment(hours, 'HH');
       var FrMinutes = moment(minutes, 'mm');
-      //setTime('{$hours}:${minutes}')
       hours = setHours(FrHours.format('HH'));
       minutes = setMinutes(FrMinutes.format('mm'));
-      //setHours(hours.toString());
-      //setMinutes(minutes.toString());
       var times = FrHours.format('HH') + ':' + FrMinutes.format('mm');
       console.log('time: ' + times);
       setfrTimes(times);
@@ -149,7 +125,7 @@ const TabButton = (currentTab, setCurrentTab, title, image) => {
     [setVisible]
   );
 
-  const onFinishConfirm = React.useCallback(
+  const onFinishConfirm = React.useCallback(    //Function to open Finish TimePicker Modal and set the selected formatted times 
     ({ hours, minutes }) => {
       setfinishVisible(false);
       console.log({ hours, minutes });
@@ -157,7 +133,7 @@ const TabButton = (currentTab, setCurrentTab, title, image) => {
       var FinMnts = moment(minutes, 'mm');
       hours = setfinishHours(FinHrs.format('HH'));
       minutes = setfinishMinutes(FinMnts.format('mm'));
-      var Fintimes = FinHrs.format('HH') + ':' + FinMnts.format('mm');
+      var Fintimes = FinHrs.format('HH') + ':' + FinMnts.format('mm'); //var to combine Hours and Minute into HH:mm format
       console.log('Finish Times: ' + Fintimes);
       setfrFinTimes(Fintimes);
       
@@ -166,8 +142,9 @@ const TabButton = (currentTab, setCurrentTab, title, image) => {
   );
  
 
-  const renderUserNames = () => {
-    if(projNum=='VOD103015'){
+  const renderUserNames = () => { //Function for rendering SiteID based on the ProjNum selected (i.e. Logic for Hierarchial Picker Component)
+    
+    if(projNum=='VOD103015'){     //if projNum(VOD103015) is selected , down below are site ID's available for this specific ProjNum
       return [<Picker.Item key="uniqueID8" label="CE005 ~ Woodcock Hill" value="CE005 ~ Woodcock Hill" />,
              <Picker.Item key="uniqueID7" label="CE006 ~ Crusheen knocknamucky" value="CE006 ~ Crusheen knocknamucky" />,
             <Picker.Item key="uniqueID6" label="CE007 ~ Lack West" value="CE007 ~ Lack West" />,
@@ -175,12 +152,12 @@ const TabButton = (currentTab, setCurrentTab, title, image) => {
             <Picker.Item key="uniqueID4" label="CE009 ~ Glenagall" value="CE009 ~ Glenagall" />]
      }
    
-     else if(projNum=='ABO101597'){
+     else if(projNum=='ABO101597'){ //if projNum(ABO101597) is selected , down below are site ID's available for this specific ProjNum
        return [<Picker.Item key="uniqueID3" label="CLS001 ~ Cluster 1 OHL" value="CLS001 ~ Cluster 1 OHL" />
              ]
       }
    
-      else if(projNum=='VOD75860'){
+      else if(projNum=='VOD75860'){ //if projNum(VOD75860) is selected , down below are site ID's available for this specific ProjNum
         return [<Picker.Item key="uniqueID4" label="DN823 Robinson Transport -  Bolts removed from fenc - DN823 Robinsons Transport" value="DN823 Robinson Transport -  Bolts removed from fenc - DN823 Robinsons Transport" />
               ]
        }
@@ -200,73 +177,28 @@ const TabButton = (currentTab, setCurrentTab, title, image) => {
   }, []);
 
 
-  React.useEffect(() => {
-    var tdate = new Date(); //Current Date
-    var monday = moment().day((1)+1); //shows Monday
-    var friday = moment().day((5)+1); //shows Monday
-    var Tday = tdate.getDay(); //Current Day
-    var month = new Date().getMonth() + 1; //Current Month
-    var year = new Date().getFullYear(); //Current Year
-    var hours = new Date().getHours(); //Current Hours
-    var min = new Date().getMinutes(); //Current Minutes
-    var sec = new Date().getSeconds(); //Current Seconds
-    /*setCurrentDate(
-    
-      //date + '/' + month + '/' + year 
-      //+ ' ' + hours + ':' + min + ':' + sec
-      moment(tdate).format("YYYY-MM-DD")
-  );*/
-  }, []);
-
-  const testClash = (d1, d2) => {     //calculating the weight of the conflict.
-    // d1 and d2 in array format
-// [moment from, moment to]
-var count = 0;
-for (var i = 0, t; t = d1[i]; i++) {
-  // use isBetween exclusion
-  if (t.isBetween(d2[0], d2[1], null, '()')) {
-    count++;
-  }
-}
-
-for (var i = 0, t; t = d2[i]; i++) {
-  // use isBetween exclusion
-  if (t.isBetween(d1[0], d1[1], null, '()')) {
-    count++;
-  }
-}
-
-if (count > 1) {
-  return console.log('completely conflict');
-}
-
-if (count > 0) {
-  return console.log('partial conflict');
-}
-
-return console.log('something else');
-}
-
-var t1 = [moment(frTimes).format('HH:mm'), moment(frTimes).format('HH:mm')]
-
-const time_clash = () => {
+const time_clash = () => {     //Function for checking if TimeClashes(2 Entries happenning at the same time) occur.
   db.transaction(function (tx) {
     tx.executeSql(
-      'SELECT * FROM Timesheet WHERE ? < depart AND ? > arrival AND date=?',
-      [frTimes, frFinTimes ,currentDate],
-      (tx, results) => {
-        var temp = [];
-       var len = results.rows.length;
+
+      //SQL Statement to select all Entries for a given Date where, 
+      //Start Time < Departure Time && Finish Time > Arrival time
+
+      'SELECT * FROM Timesheet WHERE ? < depart AND ? > arrival AND date=?',   
+      [frTimes, frFinTimes ,currentDate], 
+      (tx, results) => {              //getting results back from querying the SQL Statement
+        var temp = [];                //declaring an empty array
+       var len = results.rows.length; //var to get length of result from the SQL Statement
        console.log('len', len);
-       if(len >= 0 ) {
+       if(len >= 0 ) {                //if length of result >= 0
          for (let i = 0; i < results.rows.length; ++i) 
-         temp.push(results.rows.item(i));
-         if(len <= 0)
+         temp.push(results.rows.item(i)); //populate Temp array with values we get from results varaible(i.e  result from the SQL Statement)
+         if(len <= 0)           //if length of result <= 0, then there is no TimeClashes
          {
             console.log("Time Slot Available " + temp);
-            add_entry();
+            add_entry();        //Call Add Entry Function
          }
-         else{
+         else{                  //if length of result > 0, then TimeClash exists for the selected Time
             console.log("Error")
             alert('There is a timesheet conflict, select a different time');
          }
@@ -280,33 +212,10 @@ const time_clash = () => {
 }
 
 
-  const add_entry = () => { 
+  const add_entry = () => { //Function for adding an entry into the local database on the Device
     console.log( selectedWeek, currentDate, projNum, description, frTimes, frFinTimes, Thrs, siteID, dayoftheWeek);
-  
-  //   db.transaction(function (tx) {
-  //     tx.executeSql(
-  //       'SELECT * FROM Timesheet WHERE date=?',
-  //       [currentDate],
-  //       (tx, results) => {
-  //         var temp = [];
-  //        var len = results.rows.length;
-  
-  //        console.log('len', len);
-  //        if(len >= 0 ) {
-          
-  //          for (let i = 0; i < results.rows.length; ++i) 
-          
-  //          temp.push(results.rows.item(i));
-  //          console.log(temp);
-  //          temp.forEach()
-  // console.log(temp)
-  //        } else {
-  //          alert('Cannot Search Entry!');
-  //        }
-  //       }
-  //     );
-  //   });
 
+    //Validation checking: i.e. Cannot add an entry without selecting a Week, Day, Project, Site, Start Time, Finish Time
     if (!selectedWeek) {
       alert('Please select a end of the week');
       return;
@@ -325,23 +234,24 @@ const time_clash = () => {
       return;
     }
 
-    if (!Hours) {
+    if (!frTimes) {
       alert('Add Hours for the entry');
       return;
     }
     
-    if (!finishHours) {
+    if (!frFinTimes) {
       alert('Add End Hours for the entry');
       return;
     }
 
     db.transaction(function (tx) {
       tx.executeSql(
+        //SQL Insert Statement to insert an entry into Timesheet Table
         'INSERT INTO Timesheet(user_id, eow, date, projNum, comment , arrival, depart, totalHrs, siteID, dayoftheweek) VALUES (?,?,?,?,?,?,?,?,?,?)',
         [1, selectedWeek, currentDate, projNum, description, frTimes, frFinTimes, Thrs, siteID, dayoftheWeek ],
-        (tx, results) => {
+        (tx, results) => {    // ----------------------------------------> getting results back from querying the SQL Statement
           console.log('Results', results.rowsAffected);
-          if (results.rowsAffected > 0) {
+          if (results.rowsAffected > 0) {     //If length to results returned is greater than 0, then the entry is added succesfully
             Alert.alert(
               'Sucess',
               'Entry added succesfully to DB !!!',
@@ -349,36 +259,37 @@ const time_clash = () => {
                 {
                   text: 'Ok',
                   onPress: () =>
-                  navigation.navigate('Home'),
+                  navigation.navigate('Home'), //When the entry added is successfull, navigate from ADD ENTRY Screen to HOME Screen
                 }
               ],
               { cancelable: false }
             );
-          } else alert('Error Entry unsuccesfull !!!');
+          } else alert('Error Entry unsuccesfull !!!'); //If length to results returned is lesser than or equal to 0, then the entry added is unsuccesfull!
         }
       );
-      //save()
     });
   };
 
-  const add_lunch = () => {
+  const add_lunch = () => { //Function for adding a Lunch Entry into the Local Database in the Device
     console.log( 1, selectedWeek, currentDate, 'Lunch', 'Lunch', frTimes, frFinTimes, Thrs, 'Lunch', dayoftheWeek);
     
+    //Validation check for Day of the Week, i.e. Cannot add a Lunch entry wihtout selecting a day of the week
     if (!dayoftheWeek) {
       alert('Please select a day of the week');
       return;
     }
 
-    if(toggleCheckBox == false)
+    if(toggleCheckBox == false) //if "same lunch for the week" is not selected, then execute the SQL INSERT Statement only once
   {
   
     db.transaction(function (tx) {
       tx.executeSql(
+        //SQL Insert Statement to insert a Lunch entry into Timesheet Table
         'INSERT INTO Timesheet(user_id, eow, date, projNum, comment , arrival, depart, siteID, totalHrs, dayoftheweek) VALUES (?,?,?,?,?,?,?,?,?,?)',
         [1, selectedWeek, currentDate, 'Lunch', 'Lunch', frTimes, frFinTimes, 'Lunch', Thrs, dayoftheWeek],
-        (tx, results) => {
+        (tx, results) => {  // ----------------------------------------> getting results back from querying the SQL Statement
           console.log('Results', results.rowsAffected);
-          if (results.rowsAffected > 0) {
+          if (results.rowsAffected > 0) {  //If length to results returned is greater than 0, then the entry is added succesfully
             Alert.alert(
               'Sucess',
               'Entry added succesfully to DB !!!',
@@ -386,70 +297,74 @@ const time_clash = () => {
                 {
                   text: 'Ok',
                   onPress: () =>
-                  navigation.navigate('Home'),                 
+                  navigation.navigate('Home'), //When the entry added is successfull, navigate from ADD ENTRY Screen to HOME Screen
                 },
               ],
               { cancelable: false }
             );
-          } else alert('Error Entry unsuccesfull !!!');
+          } else alert('Error Entry unsuccesfull !!!'); //If length to results returned is lesser than or equal to 0, then the entry added is unsuccesfull!
         }
       );
-      //save()
     });
   }
   
-  else if (toggleCheckBox == true)
+  else if (toggleCheckBox == true)  //if "same lunch for the week" is  selected, then execute the same SQL INSERT Statement 5 times for M-T-W-TH-FR 
   {
   db.transaction(function (tx) {
     tx.executeSql(
+      //SQL Insert Statement to insert a Lunch entry into Timesheet Table 5 times for 5 different days of the week
       'INSERT INTO Timesheet(user_id, eow, date, projNum, comment , arrival, depart, totalHrs, siteID, dayoftheweek) VALUES (?,?,?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?,?,?)',
       [1, selectedWeek, moment(selectedWeek).day("Monday").format('L'), "Lunch", 'Lunch', frTimes, frFinTimes, Thrs, 'Lunch', dayoftheWeek , 
       1, selectedWeek, moment(selectedWeek).day("Tuesday").format('L'), 'Lunch', 'Lunch', frTimes, frFinTimes,  Thrs, 'Lunch', dayoftheWeek , 
       1, selectedWeek, moment(selectedWeek).day("Wednesday").format('L'), 'Lunch', 'Lunch', frTimes, frFinTimes,  Thrs, 'Lunch', dayoftheWeek ,
       1, selectedWeek, moment(selectedWeek).day("Thursday").format('L'), 'Lunch', 'Lunch', frTimes, frFinTimes, Thrs, 'Lunch', dayoftheWeek ,
       1, selectedWeek, moment(selectedWeek).day("Friday").format('L'), 'Lunch', 'Lunch', frTimes, frFinTimes, Thrs, 'Lunch', dayoftheWeek ],
-      (tx, results) => {
+      (tx, results) => {  // ----------------------------------------> getting results back from querying the SQL Statement
         console.log('Results', results.rowsAffected);
-        if (results.rowsAffected > 0) {
+        if (results.rowsAffected > 0) {  //If length to results returned is greater than 0, then the entry is added succesfully
           Alert.alert(
             'Sucess',
             'Entry added succesfully to DB !!!',
             [
               {
                 text: 'Ok',
-                onPress: SearchEntry()
+                //When the entry added is succesfull, call SearchEntry() 
+                //which Searches and gives updated list of all entries including the ones we recently added
+                onPress: SearchEntry() 
               },
             ],
             { cancelable: false }
           );
-        } else alert('Error Entry unsuccesfull !!!');
+        } else alert('Error Entry unsuccesfull !!!');  //If length to results returned is lesser than or equal to 0, then the entry added is unsuccesfull!
       }
     ); 
-    //save()
   });
   
   }
   };
 
-  const Lunch_time_clash = () => {
+  const Lunch_time_clash = () => { //Function to check if there's any time clash between Lunch Entries
     db.transaction(function (tx) {
       tx.executeSql(
+        //SQL Statement to select all Entries for a given Date where, 
+        //Start Time < Departure Time && Finish Time > Arrival time
+
         'SELECT * FROM Timesheet WHERE ? < depart AND ? > arrival AND date=?',
         [frTimes, frFinTimes ,currentDate],
-        (tx, results) => {
-          var temp = [];
-         var len = results.rows.length;
+        (tx, results) => {                    //getting results back from querying the SQL Statement
+          var temp = [];                      //declaring an empty array
+         var len = results.rows.length;       //var to get length of result from the SQL Statement
          console.log('len', len);
-         if(len >= 0 ) {
+         if(len >= 0 ) {                      //if length of result >= 0
            for (let i = 0; i < results.rows.length; ++i) 
-           temp.push(results.rows.item(i));
-           if(len <= 0)
+           temp.push(results.rows.item(i));   //populate Temp array with values we get from results varaible(i.e  result from the SQL Statement)
+           if(len <= 0)                       //if length of result <= 0, then there is no TimeClashes, then add Lunch Entry
            {
               console.log("Time Slot Available " + temp);
-              add_lunch();
+              add_lunch();                    //Call add_lunch Function
            }
-           else{
-              console.log("Error")
+           else{                               //if length of result > 0, then TimeClash exists for the selected Time
+              console.log("Error")    
               alert('There is a timesheet conflict, select a different time');
            }
          } 
@@ -463,18 +378,17 @@ const time_clash = () => {
 
   let options  = renderUserNames();
 
-  const saveDayofWeek = (itemValue, itemIndex) => {
+  const saveDayofWeek = (itemValue, itemIndex) => { // Function to save Day of the Week selected from the Picker
     setDayoftheWeek(itemValue);
-    var next = getNextDay(itemValue);
+    var next = getNextDay(itemValue); 
     //console.log(next.getTime());
     moment.locale('en');
     console.log(moment(next.getTime()).format("L"));
     setCurrentDate(moment(next.getTime()).format("L"));
-    calcTotalHrs();
-
+    calcTotalHrs(); //Function call to calculate Total Hours for the selected day
   }
 
-  const getNextDay = (dayName) => {
+  const getNextDay = (dayName) => { //Function to find next day given current Day and return it DATE Format
     var todayDate = new Date(selectedWeek);
     var now = todayDate.getDay();
 
@@ -492,22 +406,20 @@ const time_clash = () => {
 	// Get the timestamp for the desired day
 	var nextDayTimestamp = todayDate.getTime() + (1000 * 60 * 60 * 24 * diff);
 
-	// Get the next day
+	// Get the next day in Date Format ex: Friday 24th June 2021 --> 06/24/2021
 	return new Date(nextDayTimestamp);
 
   }
 
-  const saveStartingWeek = (value) => {
+  const saveStartingWeek = (value) => { //function for saving selected EOW
     moment.locale('en')
         console.log("saveStartingWeek - value:", moment(value).add(5, "days").format("L"));
         setselectedWeek(moment(value).add(5, "days").format("L"));
-        console.log("this friday: " + moment().day(5).format("L") + "todays date: " + moment().format("L"))
-        //setselectedWeek(navigation.getParam('eow'));
-        //setselectedWeek(new Date(value).toString());
+        console.log("this friday: " + moment().day(5).format("L") + "todays date: " + moment().format("L"));
         }
   
 
-  const getTimefromMins = (mins) => {
+  const getTimefromMins = (mins) => { //function to return minutes in HH:mm format ex: 120 mins = 2:00 hrs
     if (mins >= 24 * 60 || mins < 0) {
       Alert.alert("Valid input should be greater than or equal to 0 and less than 1440.");
     }
@@ -517,21 +429,7 @@ const time_clash = () => {
     return moment.utc().hours(h).minutes(m).format("HH:mm");
   }
 
-  // const splitTime = (time) => {  //function to split time in hours and minutes seperatly
-  //   var today = new Date();
-  //   var _t = time.split(";");
-  //   today.setHours(_t[0], _t[1], 0, 0);
-  //   return today;
-  // }
-
-  // const validate = (sTime, eTime) => {
-  //   if(+splitTime(sTime) < +splitTime(eTime)) {
-  //     var len = timeList.length;
-  //     return len>0?(+splitTime(timeList[len - 1].e))
-  //   }
-  // }
-
-   const calcTotalHrs = () => {
+   const calcTotalHrs = () => { //Function to calculate totalHrs given a start time and End Time
     //setfinishVisible(true)
      var StrtTime = moment(frTimes, "HH:mm");
      var endTime = moment(frFinTimes, "HH:mm");
@@ -539,18 +437,12 @@ const time_clash = () => {
      var duration = moment.duration(StrtTime.diff(endTime));
      var DHrs = parseInt(duration.asHours());
     var Dmins = parseInt(duration.asMinutes())-DHrs* 60;
-     var Tot  = endTime.diff(StrtTime, 'minutes');
+     var Tot  = endTime.diff(StrtTime, 'minutes'); //calculating the difference between endTime and startTime
      var timetomins = getTimefromMins(Tot);
-     //setThrs(Tot);
-     
-  //   //Alert.alert(DHrs + 'Hrs');
      setThrs(timetomins);
      console.log(timetomins);
  }
 
- const finishTime = () => {
-  setfinishVisible(true)
- }
 
  return (
   <SafeAreaView style={styles.container}>
