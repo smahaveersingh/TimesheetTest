@@ -19,7 +19,7 @@ const LOGO_WIDTH = 220;
 const LOGO_HEIGHT = 40;
 const DOT_SIZE = 40;
 const TICKER_HEIGHT = 40;
-const CIRCLE_SIZE = width * 0.6;
+const CIRCLE_SIZE = width * 0.63;
 
 
 const Circle = ({ scrollX }) => {
@@ -247,15 +247,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   imageStyle: {
+    marginTop:-28,
+    marginLeft:5,
     width: width * 0.75,
     height: width * 0.75,
     resizeMode: 'contain',
     flex: 1,
   },
   textContainer: {
+    marginTop:10,
     alignItems: 'flex-start',
     alignSelf: 'flex-end',
-    flex: 0.5,
+    flex: 0.5, 
   },
   heading: {
     color: '#444',
@@ -263,7 +266,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '800',
     letterSpacing: 2,
-    marginBottom: -5,
+    marginBottom: 3,
   },
   description: {
     color: '#ccc',
@@ -281,7 +284,7 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     position: 'absolute',
     left: 10,
-    bottom: 10,
+    bottom: 30,
     transform: [
       { translateX: -LOGO_WIDTH / 2 },
       { translateY: -LOGO_HEIGHT / 2 },
@@ -315,6 +318,7 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
   },
   tickerContainer: {
+    marginTop:30,
     position: 'absolute',
     top: 40,
     left: 20,

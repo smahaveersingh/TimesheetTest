@@ -378,7 +378,7 @@ const time_clash = () => {     //Function for checking if TimeClashes(2 Entries 
 
   let options  = renderUserNames();
 
-  const saveDayofWeek = (itemValue, itemIndex) => { // Function to save Day of the Week selected from the Picker
+  const saveDayofWeek = (itemValue, itemIndex) => { //Function to save Day of the Week selected from the Picker
     setDayoftheWeek(itemValue);
     var next = getNextDay(itemValue); 
     //console.log(next.getTime());
@@ -419,7 +419,7 @@ const time_clash = () => {     //Function for checking if TimeClashes(2 Entries 
         }
   
 
-  const getTimefromMins = (mins) => { //function to return minutes in HH:mm format ex: 120 mins = 2:00 hrs
+  const getTimefromMins = (mins) => { //function to return minutes in HH:mm format ex: 120 mins = 2:00 hrs, and to help convert Minutes in 0-100 to Minutes in 0-60 
     if (mins >= 24 * 60 || mins < 0) {
       Alert.alert("Valid input should be greater than or equal to 0 and less than 1440.");
     }
@@ -448,7 +448,7 @@ const time_clash = () => {     //Function for checking if TimeClashes(2 Entries 
   <SafeAreaView style={styles.container}>
        <View style={{ justifyContent: 'flex-start', padding: 15 }}>
         <Image source={profile} style={{
-          width: 60,
+          width: 60, 
           height: 60,
           borderRadius: 10,
           marginTop: 12
@@ -580,10 +580,9 @@ const time_clash = () => {     //Function for checking if TimeClashes(2 Entries 
         marginBottom:20,
         borderWidth: 3,
         borderColor: 'white',
-        backgroundColor: '#34c0eb',
+        backgroundColor: '#87CEEB',
         borderRadius: 20,
-        borderWidth: 4,
-          borderColor: 'black',
+      
       }}>
   <WeekSelector
       dateContainerStyle={styles.date}
@@ -712,24 +711,21 @@ style={styles.input}
     justifyContent: 'center',
     paddingVertical: 12,
     paddingHorizontal: 30,
-    borderRadius: 30,
     elevation: 3,
     backgroundColor: '#44db47',
-    width: 100,
-    marginLeft: 130,
+    width: 150,
+    marginLeft: 110,
     marginTop: 10,
-    borderColor: 'white',
-    borderWidth: 5
     }}
     onPress={time_clash}
     
     >
-  <Text style={{fontSize: 30,
-    lineHeight: 25,
+  <Text style={{fontSize: 15,
+    lineHeight: 15,
     fontWeight: 'bold',
     letterSpacing: 0.25,
     color: 'black',
-    }}> + </Text>
+    }}> Add </Text>
 </TouchableHighlight>
     </View>
     </Animated.View>

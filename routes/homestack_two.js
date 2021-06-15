@@ -12,31 +12,8 @@ import Header from '../components/Header';
 import Onboarding from '../screens/Onboarding';
 import Test from '../screens/Tester';
 
-const HAS_LAUNCHED = 'hasLaunched';
 
-const setAppLaunched = () => {
-  AsyncStorage.getItem("alreadyLaunched").then(value => {
-    if(value == null){
-      AsyncStorage.setItem(HAS_LAUNCHED, 'true'); // No need to wait for `setItem` to finish, although you might want to handle errors
-    }
-    else{
-      return false;
-    }})
-}
-
-
-
-
-
-const screens = {
-  Onboarding: {
-    screen: Onboarding,
-      navigationOptions:
-      {
-        title: null,
-        header: () => null
-      }
-},
+const screens = {  
   Login: {
     screen: Login,
     navigationOptions:
@@ -105,77 +82,8 @@ Test:
 }
 }
 
-const screens_two = {
-  
-  Login: {
-    screen: Login,
-    navigationOptions:
-    {
-      title: null,
-      header: () => null
-    }
-},
 
-ListView:
-    {
-      screen: Login,
-      navigationOptions:
-      {
-        header: () => null
-      }
-},
-
-  Home:
-  {
-      screen: Home,
-      navigationOptions:({ navigation }) => {
-      return {
-        header: () => null
-            }
-      }
-  },
-
-Hour:
-  {
-    screen: Hour,
-    navigationOptions:({ navigation }) => {
-    return {
-      header: () => null
-          }
-    }
-},
-EditSheet:
-  {
-    screen: EditSheet,
-    navigationOptions:({ navigation }) => {
-    return {
-      header: () => null
-      
-          }
-    }
-},
-
-ViewEntry:
-  {
-    screen: ViewEntry,
-    navigationOptions:({ navigation }) => {
-    return {
-      header: () => null
-          }
-    }
-},
-Test:
-  {
-    screen: Test,
-    navigationOptions:({ navigation }) => {
-    return {
-      header: () => null
-          }
-    }
-}
-}
-
-const HomeStack = createStackNavigator(screens);
+const HomeStack_two = createStackNavigator(screens);
 
   // let HomeStack;
 
@@ -188,4 +96,4 @@ const HomeStack = createStackNavigator(screens);
   //   }    
 
 
-export default HomeStack;
+export default HomeStack_two;

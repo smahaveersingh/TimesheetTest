@@ -892,9 +892,7 @@ db.transaction(function (tx) {
           height: 100,
           width:300,
           marginLeft: 0,
-          borderWidth: 4,
-          borderColor: 'black',
-          backgroundColor: '#34c0eb',
+          backgroundColor: '#87CEEB',
           borderRadius: 20,
           elevation: 10,
           shadowColor: '#fff',
@@ -902,7 +900,7 @@ db.transaction(function (tx) {
           shadowOpacity: 0.5,
           shadowRadius: 5, 
       }}>
-          <Text style={{fontWeight: '700', fontSize: 20, marginBottom: 12, color: 'black'}}>  Week Ending: {moment(selectedWeek).format('MMM Do')}</Text>
+          <Text style={{fontWeight: '700', fontSize: 20, marginBottom: 5, color: 'black'}}>  Week Ending: {moment(selectedWeek).format('MMM Do')}</Text>
       <WeekSelector
           whitelistRange={[new Date(2021, 1, 9), new Date()]}
           weekStartsOn={6}
@@ -910,7 +908,7 @@ db.transaction(function (tx) {
         />
         </View>
 
-<Text style={{backgroundColor: "#091629", borderColor: 'black', paddingHorizontal: 25, paddingTop: 5, borderRadius: 10, height: 40, fontSize: 20, fontWeight: 'bold', color: '#f2fbff' ,width: 300, marginTop: 5, marginLeft: 60, borderWidth: 3}}>Week Total Hours: {totalHrsforday}</Text>
+<Text style={{backgroundColor: "#091629", borderColor: 'black', paddingHorizontal: 25, paddingTop: 5, borderRadius: 10, height: 40, fontSize: 20, fontWeight: 'bold', color: '#f2fbff' ,width: 300, marginTop: 5, marginLeft: 0, borderWidth: 3}}>Week Total Hours: {totalHrsforday}</Text>
           <Animated.FlatList 
     data={flatListItems}
     onScroll={
@@ -968,7 +966,7 @@ db.transaction(function (tx) {
             <View>
             <Text style={{fontWeight: '700', fontSize: 24, color: '#091629'}}>{item.projNum}  </Text> 
                   <Text style={{opacity: .7, fontSize: 15}}>  {item.projNum} - {item.siteID}</Text>
-                <Text style={{fontWeight: '700', fontSize: 14, color: '#091629'}}>  {item.arrival} - {item.depart}                             Duration : {item.totalHrs}</Text>
+                <Text style={{fontWeight: '700', fontSize: 14, color: '#091629'}}>  {item.arrival} - {item.depart}                      Duration : {item.totalHrs}</Text>
         
           
            </View>

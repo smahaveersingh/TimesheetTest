@@ -641,8 +641,8 @@ var t1 = [moment(frTimes).format('HH:mm'), moment(frTimes).format('HH:mm')]
 
     <View style={{marginTop: 110}}>
       <View style={styles.Weekarrow}>
-        <Text style={{fontWeight: 'bold',  color: '#091629'}}>Week Ending: {selectedWeek}</Text>
-        <Text style={{fontWeight: 'bold',  color: '#091629'}}>Week day: {moment(currentDate).format('dddd MMM Do')}</Text>
+        <Text style={{fontWeight: 'bold',  color: '#091629', marginLeft: 10, marginTop: 5, fontSize: 16}}>Week Ending: {selectedWeek} </Text>
+        <Text style={{fontWeight: 'bold',  color: '#091629', marginLeft: 10, fontSize: 16}}>Week day: {moment(currentDate).format('dddd MMM Do')}</Text>
       </View>
   
       <View style={styles.section}>
@@ -766,11 +766,11 @@ var t1 = [moment(frTimes).format('HH:mm'), moment(frTimes).format('HH:mm')]
                fontWeight: 'bold',
              },
              Weekarrow:{
-              height: 100,
+              height: 70,
               width:370,
               marginTop:-70,
               marginBottom: 30,
-              backgroundColor: '#e1ecf2',
+              backgroundColor: '#87CEEB',
               borderRadius: 20,
               fontWeight: 'bold'
              },
