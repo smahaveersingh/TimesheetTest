@@ -45,7 +45,7 @@ export default function Home ({ navigation }) {
   const [finishvisible, setfinishVisible] = React.useState(false);         //Flag variable for Finish Time TimePicker
   const [finishHours, setfinishHours] = React.useState(selectDate.getHours());              //Variable for Finish Hours from TimePicker
   const [finishMinutes, setfinishMinutes] = React.useState(selectDate.getMinutes());        //Variable for Finish Minutes from TimePicker
-  const [currentDate, setCurrentDate] = React.useState("Select a Day");               //variable for current Date
+  const [currentDate, setCurrentDate] = React.useState(moment().startOf('week').add('days', 1));               //variable for current Date
   const [visible, setVisible] = React.useState(false);                                      //Flag variable for Start Time TimePicker
   const [showAlert, setshowAlert] = React.useState(false);                                  //Flag variable for Alert 
   const [IDtimesheet, setIDtimesheet] = React.useState('');                                 //variable for id_timesheet
@@ -205,7 +205,7 @@ export default function Home ({ navigation }) {
 
     const deleteHandler = () => //Submit Button: Onclicking this will Submit entries only when it "Friday" or "Monday"
     {
-      if (moment(Week).day("Friday").format('MMM Do') == moment().format('MMM Do') || moment(Week).day("Monday").format('MMM Do') == moment().format('MMM Do')) {
+      if (moment(Week).day("Friday").format('MMM Do') == moment().format('MMM Do') || moment(Week).day("Wednesday").format('MMM Do') == moment().format('MMM Do')) {
         navigation.navigate('ViewEntry');
       } else {
         alert('Its not Friday or Monday Yet!');

@@ -61,11 +61,11 @@ const db = DatabaseConnection.getConnection();
     <TouchableOpacity onPress={() => {
       if (title == "LogOut") {        //If Logout Button is selected in the side Drawer, navigate the user to Login Screen
         navigation.navigate("Login")
-      } if (title == "Hour") {        //If Hour Button is selected, navigate the user to Add Entry Screen
-        navigation.navigate("Hour")
       } if (title == "Home") {        //If Home Button is selected, navigate the user to Home Screen
         navigation.navigate("Home")
-      } if (title == "TS Review") {   //If TS Review Button is selected, navigate the user to TS Review Screen
+      } if (title == "Hour") {        //If Hour Button is selected, navigate the user to Add Entry Screen
+        navigation.navigate("Hour")
+      }  if (title == "TS Review") {   //If TS Review Button is selected, navigate the user to TS Review Screen
         navigation.navigate("Test")
       } 
       else {
