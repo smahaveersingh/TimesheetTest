@@ -1,10 +1,11 @@
 import React, {useEffect, useState,useRef} from 'react';
-import { StyleSheet, Text, View, TextInput, Alert, Image, StatusBar, Animated, TouchableOpacity, SafeAreaView, TouchableHighlight} from 'react-native';
+import { StyleSheet, Text, View, TextInput, Alert, Image, KeyboardAvoidingView, Animated, Platform, TouchableOpacity, SafeAreaView, TouchableHighlight} from 'react-native';
 import AsyncStorage from "@react-native-community/async-storage";
 import { Button } from 'react-native-paper';
 import { TimePickerModal } from 'react-native-paper-dates';
 import { ActivityIndicator, FlatList} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import CheckBox from '@react-native-community/checkbox';
 import WeekSelector from 'react-native-week-selector';
 import "intl";
 import "intl/locale-data/jsonp/en";
@@ -20,6 +21,8 @@ import logout from '../assets/logout.png'
 // Menu
 import menu from '../assets/menu.png';
 import close from '../assets/close.png';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+
 
 
 const db = DatabaseConnection.getConnection();
@@ -47,7 +50,8 @@ const db = DatabaseConnection.getConnection();
   const [data, setData] = React.useState([]);
   const [currentTab, setCurrentTab] = useState("Hour");   //var to set current Tab status in side Drawer
   const [showMenu, setShowMenu] = useState(false);        //var to get the curretn Status of menu ...
-
+  const keyboardVerticalOffset = Platform.OS === 'android' ? 100 : 0
+  
   // Animated Properties...
   const offsetValue = useRef(new Animated.Value(0)).current;
   // Scale Intially must be One...
@@ -61,11 +65,11 @@ const db = DatabaseConnection.getConnection();
     <TouchableOpacity onPress={() => {
       if (title == "LogOut") {        //If Logout Button is selected in the side Drawer, navigate the user to Login Screen
         navigation.navigate("Login")
-      } if (title == "Home") {        //If Home Button is selected, navigate the user to Home Screen
-        navigation.navigate("Home")
       } if (title == "Hour") {        //If Hour Button is selected, navigate the user to Add Entry Screen
         navigation.navigate("Hour")
-      }  if (title == "TS Review") {   //If TS Review Button is selected, navigate the user to TS Review Screen
+      } if (title == "Home") {        //If Home Button is selected, navigate the user to Home Screen
+        navigation.navigate("Home")
+      } if (title == "TS Review") {   //If TS Review Button is selected, navigate the user to TS Review Screen
         navigation.navigate("Test")
       } 
       else {
@@ -136,6 +140,8 @@ const db = DatabaseConnection.getConnection();
       var Fintimes = FinHrs.format('HH') + ':' + FinMnts.format('mm'); //var to combine Hours and Minute into HH:mm format
       console.log('Finish Times: ' + Fintimes);
       setfrFinTimes(Fintimes);
+      calcTotalHrs(); //Function call to calculate Total Hours for the selected day
+
       
     },
     [setfinishVisible]
@@ -305,6 +311,7 @@ const time_clash = () => {     //Function for checking if TimeClashes(2 Entries 
           } else alert('Error Entry unsuccesfull !!!'); //If length to results returned is lesser than or equal to 0, then the entry added is unsuccesfull!
         }
       );
+      //save()
     });
   }
   
@@ -385,7 +392,6 @@ const time_clash = () => {     //Function for checking if TimeClashes(2 Entries 
     moment.locale('en');
     console.log(moment(next.getTime()).format("L"));
     setCurrentDate(moment(next.getTime()).format("L"));
-    calcTotalHrs(); //Function call to calculate Total Hours for the selected day
   }
 
   const getNextDay = (dayName) => { //Function to find next day given current Day and return it DATE Format
@@ -443,9 +449,17 @@ const time_clash = () => {     //Function for checking if TimeClashes(2 Entries 
      console.log(timetomins);
  }
 
+ const both  = () => 
+ {
+   calcTotalHrs();
+   time_clash(Thrs);
+
+ }
+
 
  return (
   <SafeAreaView style={styles.container}>
+  
        <View style={{ justifyContent: 'flex-start', padding: 15 }}>
         <Image source={profile} style={{
           width: 60, 
@@ -571,7 +585,8 @@ const time_clash = () => {     //Function for checking if TimeClashes(2 Entries 
        
     
   <View>
-  <Text style={{fontWeight: 'bold',  fontSize: 20, color: '#091629', marginLeft: 10, marginTop: 10}}>Week Ending                {moment(selectedWeek).format('dddd, MMMM Do')}{navigation.getParam('eow')}</Text>
+  <KeyboardAvoidingView behavior='position' keyboardVerticalOffset={keyboardVerticalOffset}>
+  <Text style={{fontWeight: 'bold',  fontSize: 20, color: '#091629', marginLeft: 10, marginTop: 30}}>Week Ending                {moment(selectedWeek).format('dddd, MMMM Do')}{navigation.getParam('eow')}</Text>
     <View style={{
         marginTop:20,
         height: 70,
@@ -683,11 +698,12 @@ const time_clash = () => {     //Function for checking if TimeClashes(2 Entries 
             {<Picker
                 mode='dropdown'
                 selectedValue={siteID}
+              //   enabled={false}
+              // prompt="Choose Language"
                 onValueChange={(itemValue, itemIndex) =>
                     //this.setState({ siteID: itemValue })
                     setsiteID(itemValue)
                 }>
-                <Picker.Item label="Please Select a Site" value="" />
                      {options}
 
             </Picker>}
@@ -696,8 +712,6 @@ const time_clash = () => {     //Function for checking if TimeClashes(2 Entries 
    </View>
 
 
-   
-
 
 <TextInput 
 placeholder="  Description"
@@ -705,7 +719,6 @@ onChangeText={description => setDescription(description)}
 defaultValue={description}
 style={styles.input}
 />
-
 
 <TouchableHighlight style={{ alignItems: 'center',
     justifyContent: 'center',
@@ -717,7 +730,7 @@ style={styles.input}
     marginLeft: 110,
     marginTop: 10,
     }}
-    onPress={time_clash}
+    onPress={both}
     
     >
   <Text style={{fontSize: 15,
@@ -727,9 +740,11 @@ style={styles.input}
     color: 'black',
     }}> Add </Text>
 </TouchableHighlight>
+</KeyboardAvoidingView>
     </View>
     </Animated.View>
     </Animated.View>
+    
 </SafeAreaView>
    );
    }

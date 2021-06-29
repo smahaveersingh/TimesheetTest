@@ -205,7 +205,7 @@ export default function Home ({ navigation }) {
 
     const deleteHandler = () => //Submit Button: Onclicking this will Submit entries only when it "Friday" or "Monday"
     {
-      if (moment(Week).day("Friday").format('MMM Do') == moment().format('MMM Do') || moment(Week).day("Wednesday").format('MMM Do') == moment().format('MMM Do')) {
+      if (moment(Week).day("Monday").format('MMM Do') == moment().format('MMM Do') || moment(Week).day("Wednesday").format('MMM Do') == moment().format('MMM Do')) {
         navigation.navigate('ViewEntry');
       } else {
         alert('Its not Friday or Monday Yet!');
